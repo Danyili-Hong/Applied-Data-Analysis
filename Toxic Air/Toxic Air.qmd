@@ -1,0 +1,94 @@
+---
+title: "Toxic Air"
+author: "Danyili Hong"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+library(glmmTMB)
+library(DHARMa)
+```
+
+# Model Plan
+
+### Research Question
+
+We will aim to determine whether air pollution is linked to higher cancer rates among black or impoverished communities in Louisiana.
+
+### Causal Diagram
+
+![](toxic%20air.png)
+
+Considering the causal diagram above, the response variable will be the number of cancer cases and the main predictor I'm most interested in is the manufacturing percentage in different parishes. Each parish also has different percentages of obese and smokers. I also want to see if the manufacturing percentage differs among black or impoverished communities so I put them as my moderators.
+
+# Explore
+
+```{r}
+cancer <- read_csv('https://sldr.netlify.app/data/LA_cancer_data.csv', show_col_types = FALSE) |>
+select(cancer_cases, percent_manufacturing, percent_black, percent_poverty, parish, percent_obese, percent_smokers) |>
+na.omit()
+nrow(cancer)
+nrow(cancer)/15
+```
+
+There are 242 rows of data, so the n/15 rule suggests we can estimate about 16 parameters. For my model I'm going to have 4 parameters and it is smaller than the estimation. 
+
+```{r}
+gf_point(cancer_cases ~ percent_manufacturing, data = cancer) |>
+  gf_labs(title = 'the correlation between cancer cases and air pollution',
+         x = "manufacturing percentage",
+         y = "cancer cases")
+```
+
+I used scatter plot to show the relationship between cancer cases and manufacturing percentage. I was expecting the more manufacturing percentage the more cancer cases, but it looks like there isn't really a pattern that I can conclude from this plot.
+
+# Fit a Model
+
+```{r}
+nb1 <- glmmTMB(cancer_cases ~ percent_manufacturing + percent_black + percent_poverty, data = cancer, family = nbinom1(link = 'log'))
+summary(nb1)
+nb2 <- glmmTMB(cancer_cases ~ percent_manufacturing + percent_black + percent_poverty, data = cancer, family = nbinom2(link = 'log'))
+AIC(nb1, nb2)
+```
+nb2 is slightly better than nb1 according to the AIC score so I chose nb2 to proceed with next procedures. 
+
+# Assessment
+
+```{r}
+nb2_sim <- simulateResiduals(nb2)
+plotResiduals(nb2_sim, quantreg = FALSE)
+s245::gf_acf(~resid(nb2))
+```
+
+The model predicted value is close to the median of the simulated residuals. This suggests that the model is a good fit for the data. I would say the mean-variance condition of the model is met.
+
+In the ACF plot above, the values of the autocorrelation function are well within the confidence bounds for all lags above 0 except for one, so we have no evidence of any dependence in the residuals. So, we believe the residual independence condition is met.
+
+# Conclusion
+
+### Model Selection
+
+```{r}
+car::Anova(nb2)
+```
+
+
+### Prediction Plot
+
+```{r}
+cancer <- as.data.frame(cancer)
+ggpredict(nb2, terms = 'percent_manufacturing') |>
+  plot()
+```
+
+According to ANOVA, We found a p-value of 0.9 which provides a very weak evidence that percent_manufacturing has association with cancer_cases. According to prediction plot, I can fit a horizontal line inside the confidence interval so it doesn't really provide any evidence for association between percent_manufacturing and cancer_cases. 
