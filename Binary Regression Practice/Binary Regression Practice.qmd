@@ -1,0 +1,54 @@
+---
+title: "Binary Regression Practice"
+author: "Danyili Hong"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+library(glmmTMB)
+```
+
+```{r}
+searches <- read_csv('https://sldr.netlify.app/data/election_searches.csv', show_col_types = FALSE) |>
+  mutate(Race_Ethnicity = str_remove_all(Race_Ethnicity, '_NA'),
+         Race_Ethnicity = str_remove_all(Race_Ethnicity, 'NA_')) |>
+  mutate(Race_Ethnicity = ifelse(grepl(pattern = '_', Race_Ethnicity), 
+                                 'Multiple', 
+                                 Race_Ethnicity)) |>
+  filter(Education != 'Less than 9th grade' & Sex != 'Other')   |> # remove as there are only very few
+  mutate(Income = fct_relevel(Income,
+                              "Under $10,000",
+                              "$10,000 to $14,999",
+                              "$15,000 to $19,999",
+                              "$20,000 to $29,999",
+                              "$30,000 to $39,999",
+                              "$40,000 to $49,999",
+                              "$50,000 to $74,999",
+                              "$75,000 to $99,999",
+                              "$100,000 to $149,999",
+                              "$150,000 and over",
+                              "I prefer not to say"),
+         Education = fct_relevel(Education,
+                                 "9th to 12th grade",
+                                 "High school graduate",
+                                 "Some college or associate degree",
+                                 "Bachelors", 
+                                 "Advanced" ),
+         Post_Choice = factor(Post_Choice),
+         Post_Choice = fct_relevel(Post_Choice, "Tony Abbott", "Julia Gillard")) |>
+  select(-c(Vote_Sway, Pre_Vote, Post_Vote))
+```
+
+```{r}
+model <- glmmTMB(Post_Choice ~ Group, data=searches, family = nbinom1(link = 'log'))
+```
