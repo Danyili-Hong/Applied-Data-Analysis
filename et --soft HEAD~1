@@ -1,0 +1,2731 @@
+[33mcommit 5bcf3b16b8f0ff9f7aa0e1e5e4aba2f09b737ab9[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: Danyili Hong <dh48@calvin.edu>
+Date:   Mon Aug 12 12:13:42 2024 -0400
+
+    stat 245
+
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mnew file mode 100644[m
+[1mindex 0000000..5b6a065[m
+[1m--- /dev/null[m
+[1m+++ b/.gitignore[m
+[36m@@ -0,0 +1,4 @@[m
+[32m+[m[32m.Rproj.user[m
+[32m+[m[32m.Rhistory[m
+[32m+[m[32m.RData[m
+[32m+[m[32m.Ruserdata[m
+[1mdiff --git a/Applied-Data-Analysis.Rproj b/Applied-Data-Analysis.Rproj[m
+[1mnew file mode 100644[m
+[1mindex 0000000..8e3c2eb[m
+[1m--- /dev/null[m
+[1m+++ b/Applied-Data-Analysis.Rproj[m
+[36m@@ -0,0 +1,13 @@[m
+[32m+[m[32mVersion: 1.0[m
+[32m+[m
+[32m+[m[32mRestoreWorkspace: Default[m
+[32m+[m[32mSaveWorkspace: Default[m
+[32m+[m[32mAlwaysSaveHistory: Default[m
+[32m+[m
+[32m+[m[32mEnableCodeIndexing: Yes[m
+[32m+[m[32mUseSpacesForTab: Yes[m
+[32m+[m[32mNumSpacesForTab: 2[m
+[32m+[m[32mEncoding: UTF-8[m
+[32m+[m
+[32m+[m[32mRnwWeave: Sweave[m
+[32m+[m[32mLaTeX: pdfLaTeX[m
+[1mdiff --git a/Binary Regression Practice/Binary Regression Practice.qmd b/Binary Regression Practice/Binary Regression Practice.qmd[m
+[1mnew file mode 100644[m
+[1mindex 0000000..5c93b51[m
+[1m--- /dev/null[m
+[1m+++ b/Binary Regression Practice/Binary Regression Practice.qmd[m	
+[36m@@ -0,0 +1,54 @@[m
+[32m+[m[32m---[m
+[32m+[m[32mtitle: "Binary Regression Practice"[m
+[32m+[m[32mauthor: "Danyili Hong"[m
+[32m+[m[32mformat:[m
+[32m+[m[32m  html:[m
+[32m+[m[32m    embed-resources: true[m
+[32m+[m[32m    code-tools: true[m
+[32m+[m[32m    code-fold: true[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32m#| label: setup[m
+[32m+[m[32m#| include: false[m
+[32m+[m[32mlibrary(tidyverse)[m
+[32m+[m[32mlibrary(ggformula)[m
+[32m+[m[32mlibrary(ggplot2)[m
+[32m+[m[32mlibrary(ggeffects)[m
+[32m+[m[32mlibrary(glmmTMB)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32msearches <- read_csv('https://sldr.netlify.app/data/election_searches.csv', show_col_types = FALSE) |>[m
+[32m+[m[32m  mutate(Race_Ethnicity = str_remove_all(Race_Ethnicity, '_NA'),[m
+[32m+[m[32m         Race_Ethnicity = str_remove_all(Race_Ethnicity, 'NA_')) |>[m
+[32m+[m[32m  mutate(Race_Ethnicity = ifelse(grepl(pattern = '_', Race_Ethnicity),[m[41m [m
+[32m+[m[32m                                 'Multiple',[m[41m [m
+[32m+[m[32m                                 Race_Ethnicity)) |>[m
+[32m+[m[32m  filter(Education != 'Less than 9th grade' & Sex != 'Other')   |> # remove as there are only very few[m
+[32m+[m[32m  mutate(Income = fct_relevel(Income,[m
+[32m+[m[32m                              "Under $10,000",[m
+[32m+[m[32m                              "$10,000 to $14,999",[m
+[32m+[m[32m                              "$15,000 to $19,999",[m
+[32m+[m[32m                              "$20,000 to $29,999",[m
+[32m+[m[32m                              "$30,000 to $39,999",[m
+[32m+[m[32m                              "$40,000 to $49,999",[m
+[32m+[m[32m                              "$50,000 to $74,999",[m
+[32m+[m[32m                              "$75,000 to $99,999",[m
+[32m+[m[32m                              "$100,000 to $149,999",[m
+[32m+[m[32m                              "$150,000 and over",[m
+[32m+[m[32m                              "I prefer not to say"),[m
+[32m+[m[32m         Education = fct_relevel(Education,[m
+[32m+[m[32m                                 "9th to 12th grade",[m
+[32m+[m[32m                                 "High school graduate",[m
+[32m+[m[32m                                 "Some college or associate degree",[m
+[32m+[m[32m                                 "Bachelors",[m[41m [m
+[32m+[m[32m                                 "Advanced" ),[m
+[32m+[m[32m         Post_Choice = factor(Post_Choice),[m
+[32m+[m[32m         Post_Choice = fct_relevel(Post_Choice, "Tony Abbott", "Julia Gillard")) |>[m
+[32m+[m[32m  select(-c(Vote_Sway, Pre_Vote, Post_Vote))[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32mmodel <- glmmTMB(Post_Choice ~ Group, data=searches, family = nbinom1(link = 'log'))[m
+[32m+[m[32m```[m
+\ No newline at end of file[m
+[1mdiff --git a/Case Study:Diversity and Innovation.html b/Case Study:Diversity and Innovation.html[m
+[1mnew file mode 100644[m
+[1mindex 0000000..aa281df[m
+[1m--- /dev/null[m
+[1m+++ b/Case Study:Diversity and Innovation.html[m	
+[36m@@ -0,0 +1,511 @@[m
+[32m+[m[32m<!DOCTYPE html>[m
+[32m+[m[32m<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>[m
+[32m+[m
+[32m+[m[32m<meta charset="utf-8">[m
+[32m+[m[32m<meta name="generator" content="quarto-1.3.353">[m
+[32m+[m
+[32m+[m[32m<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">[m
+[32m+[m
+[32m+[m
+[32m+[m[32m<title>Case Study:Diversity and Innovation</title>[m
+[32m+[m[32m<style>[m
+[32m+[m[32mcode{white-space: pre-wrap;}[m
+[32m+[m[32mspan.smallcaps{font-variant: small-caps;}[m
+[32m+[m[32mdiv.columns{display: flex; gap: min(4vw, 1.5em);}[m
+[32m+[m[32mdiv.column{flex: auto; overflow-x: auto;}[m
+[32m+[m[32mdiv.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}[m
+[32m+[m[32mul.task-list{list-style: none;}[m
+[32m+[m[32mul.task-list li input[type="checkbox"] {[m
+[32m+[m[32m  width: 0.8em;[m
+[32m+[m[32m  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */[m[41m [m
+[32m+[m[32m  vertical-align: middle;[m
+[32m+[m[32m}[m
+[32m+[m[32m/* CSS for syntax highlighting */[m
+[32m+[m[32mpre > code.sourceCode { white-space: pre; position: relative; }[m
+[32m+[m[32mpre > code.sourceCode > span { display: inline-block; line-height: 1.25; }[m
+[32m+[m[32mpre > code.sourceCode > span:empty { height: 1.2em; }[m
+[32m+[m[32m.sourceCode { overflow: visible; }[m
+[32m+[m[32mcode.sourceCode > span { color: inherit; text-decoration: inherit; }[m
+[32m+[m[32mdiv.sourceCode { margin: 1em 0; }[m
+[32m+[m[32mpre.sourceCode { margin: 0; }[m
+[32m+[m[32m@media screen {[m
+[32m+[m[32mdiv.sourceCode { overflow: auto; }[m
+[32m+[m[32m}[m
+[32m+[m[32m@media print {[m
+[32m+[m[32mpre > code.sourceCode { white-space: pre-wrap; }[m
+[32m+[m[32mpre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }[m
+[32m+[m[32m}[m
+[32m+[m[32mpre.numberSource code[m
+[32m+[m[32m  { counter-reset: source-line 0; }[m
+[32m+[m[32mpre.numberSource code > span[m
+[32m+[m[32m  { position: relative; left: -4em; counter-increment: source-line; }[m
+[32m+[m[32mpre.numberSource code > span > a:first-child::before[m
+[32m+[m[32m  { content: counter(source-line);[m
+[32m+[m[32m    position: relative; left: -1em; text-align: right; vertical-align: baseline;[m
+[32m+[m[32m    border: none; display: inline-block;[m
+[32m+[m[32m    -webkit-touch-callout: none; -webkit-user-select: none;[m
+[32m+[m[32m    -khtml-user-select: none; -moz-user-select: none;[m
+[32m+[m[32m    -ms-user-select: none; user-select: none;[m
+[32m+[m[32m    padding: 0 4px; width: 4em;[m
+[32m+[m[32m  }[m
+[32m+[m[32mpre.numberSource { margin-left: 3em;  padding-left: 4px; }[m
+[32m+[m[32mdiv.sourceCode[m
+[32m+[m[32m  {   }[m
+[32m+[m[32m@media screen {[m
+[32m+[m[32mpre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }[m
+[32m+[m[32m}[m
+[32m+[m[32m</style>[m
+[32m+[m
+[32m+[m
+[32m+[m[32m<script src="Case Study:Diversity and Innovation_files/libs/clipboard/clipboard.min.js"></script>[m
+[32m+[m[32m<script src="Case Study:Diversity and Innovation_files/libs/quarto-html/quarto.js"></script>[m
+[32m+[m[32m<script src="Case Study:Diversity and Innovation_files/libs/quarto-html/popper.min.js"></script>[m
+[32m+[m[32m<script src="Case Study:Diversity and Innovation_files/libs/quarto-html/tippy.umd.min.js"></script>[m
+[32m+[m[32m<script src="Case Study:Diversity and Innovation_files/libs/quarto-html/anchor.min.js"></script>[m
+[32m+[m[32m<link href="Case Study:Diversity and Innovation_files/libs/quarto-html/tippy.css" rel="stylesheet">[m
+[32m+[m[32m<link href="Case Study:Diversity and Innovation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">[m
+[32m+[m[32m<script src="Case Study:Diversity and Innovation_files/libs/bootstrap/bootstrap.min.js"></script>[m
+[32m+[m[32m<link href="Case Study:Diversity and Innovation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">[m
+[32m+[m[32m<link href="Case Study:Diversity and Innovation_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">[m
+[32m+[m
+[32m+[m[32m  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>[m
+[32m+[m[32m  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>[m
+[32m+[m
+[32m+[m[32m</head>[m
+[32m+[m
+[32m+[m[32m<body class="fullcontent">[m
+[32m+[m
+[32m+[m[32m<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">[m
+[32m+[m
+[32m+[m[32m<main class="content" id="quarto-document-content">[m
+[32m+[m
+[32m+[m[32m<header id="title-block-header" class="quarto-title-block default">[m
+[32m+[m[32m<div class="quarto-title">[m
+[32m+[m[32m<h1 class="title">Case Study:Diversity and Innovation</h1>[m
+[32m+[m[32m</div>[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m<div class="quarto-title-meta">[m
+[32m+[m
+[32m+[m[41m    [m
+[32m+[m[41m  [m
+[32m+[m[41m    [m
+[32m+[m[32m  </div>[m
+[32m+[m[41m  [m
+[32m+[m
+[32m+[m[32m</header>[m
+[32m+[m
+[32m+[m[32m<p>Planning a model: the response would be novelty, and predictors are sex and race ethnicity. I wanted to know if sex and race would have any correlation with innovation level.</p>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>innovation <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'https://sldr.netlify.app/data/phd_innovation.csv'</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>[m
+[32m+[m[32m<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lm</span>(novelty <span class="sc">~</span> sex <span class="sc">+</span> race_ethnicity, <span class="at">data =</span> innovation)</span>[m
+[32m+[m[32m<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(innovation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output cell-output-stdout">[m
+[32m+[m[32m<pre><code>[1] 4195</code></pre>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_boxplot</span>(novelty <span class="sc">~</span> sex, <span class="at">data =</span> innovation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_boxplot</span>(novelty <span class="sc">~</span> race_ethnicity, <span class="at">data =</span> innovation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-3-2.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_point</span>(novelty <span class="sc">~</span> year, <span class="at">data =</span> innovation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-3-3.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_boxplot</span>(novelty <span class="sc">~</span> field, <span class="at">data =</span> innovation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-3-4.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_bar</span>( <span class="sc">~</span> field, </span>[m
+[32m+[m[32m<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">fill =</span> <span class="sc">~</span> race_ethnicity,</span>[m
+[32m+[m[32m<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">data =</span> innovation, </span>[m
+[32m+[m[32m<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">position =</span> <span class="st">'dodge'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-3-5.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<p>The graph between novelty and sex doesn’t show much since they have very similar median and IQR. The graph between novelty and race ethnicity shows a dominant lead for White followed by Asians and Black or African American. I can also see a small trend as the year goes on the novelty level tend to be down a little bit. There are some fields are leading the novelty level but I can’t really tell since the names are all overlapped.</p>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output cell-output-stdout">[m
+[32m+[m[32m<pre><code>[m
+[32m+[m[32mCall:[m
+[32m+[m[32mlm(formula = novelty ~ sex + race_ethnicity, data = innovation)[m
+[32m+[m
+[32m+[m[32mResiduals:[m
+[32m+[m[32m   Min     1Q Median     3Q    Max[m[41m [m
+[32m+[m[32m-5.313 -3.551 -1.491  1.870 33.519[m[41m [m
+[32m+[m
+[32m+[m[32mCoefficients:[m
+[32m+[m[32m                                              Estimate Std. Error t value[m
+[32m+[m[32m(Intercept)                                    8.03157    1.38423   5.802[m
+[32m+[m[32msexMale                                       -0.09716    0.15580  -0.624[m
+[32m+[m[32mrace_ethnicityAsian                            0.85802    1.40703   0.610[m
+[32m+[m[32mrace_ethnicityBlack or African American        0.80241    1.41871   0.566[m
+[32m+[m[32mrace_ethnicityEthnicity not reported           1.22550    1.48426   0.826[m
+[32m+[m[32mrace_ethnicityHispanic or Latino               0.83296    1.42123   0.586[m
+[32m+[m[32mrace_ethnicityMore than one race               1.16157    1.50115   0.774[m
+[32m+[m[32mrace_ethnicityOther race or race not reported  0.72359    1.54965   0.467[m
+[32m+[m[32mrace_ethnicityWhite                            0.34103    1.38608   0.246[m
+[32m+[m[32m                                              Pr(&gt;|t|)[m[41m    [m
+[32m+[m[32m(Intercept)                                   7.03e-09 ***[m
+[32m+[m[32msexMale                                          0.533[m[41m    [m
+[32m+[m[32mrace_ethnicityAsian                              0.542[m[41m    [m
+[32m+[m[32mrace_ethnicityBlack or African American          0.572[m[41m    [m
+[32m+[m[32mrace_ethnicityEthnicity not reported             0.409[m[41m    [m
+[32m+[m[32mrace_ethnicityHispanic or Latino                 0.558[m[41m    [m
+[32m+[m[32mrace_ethnicityMore than one race                 0.439[m[41m    [m
+[32m+[m[32mrace_ethnicityOther race or race not reported    0.641[m[41m    [m
+[32m+[m[32mrace_ethnicityWhite                              0.806[m[41m    [m
+[32m+[m[32m---[m
+[32m+[m[32mSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1[m
+[32m+[m
+[32m+[m[32mResidual standard error: 4.986 on 4186 degrees of freedom[m
+[32m+[m[32mMultiple R-squared:  0.002523,  Adjusted R-squared:  0.0006166[m[41m [m
+[32m+[m[32mF-statistic: 1.323 on 8 and 4186 DF,  p-value: 0.2265</code></pre>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<p>Causal Diagram:</p>[m
+[32m+[m[32m<p>My main predictor is race ethnicity with my response variable novelty. I made sex as a moderator since it doesn’t affect novelty level directly. Both field and year showed a reasonable correlation with novelty. I would include race ethnicity, field, and year as my predictors to my new model.</p>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>nmodel <span class="ot">&lt;-</span> <span class="fu">lm</span>(novelty <span class="sc">~</span> race_ethnicity <span class="sc">+</span> field <span class="sc">+</span> year, <span class="at">data =</span> innovation)</span>[m
+[32m+[m[32m<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(nmodel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output cell-output-stdout">[m
+[32m+[m[32m<pre><code>[m
+[32m+[m[32mCall:[m
+[32m+[m[32mlm(formula = novelty ~ race_ethnicity + field + year, data = innovation)[m
+[32m+[m
+[32m+[m[32mResiduals:[m
+[32m+[m[32m   Min     1Q Median     3Q    Max[m[41m [m
+[32m+[m[32m-5.656 -3.522 -1.545  1.876 33.635[m[41m [m
+[32m+[m
+[32m+[m[32mCoefficients:[m
+[32m+[m[32m                                               Estimate Std. Error t value[m
+[32m+[m[32m(Intercept)                                   -30.53964   27.54555  -1.109[m
+[32m+[m[32mrace_ethnicityAsian                             0.70139    1.40565   0.499[m
+[32m+[m[32mrace_ethnicityBlack or African American         0.56545    1.41834   0.399[m
+[32m+[m[32mrace_ethnicityEthnicity not reported            1.03825    1.48281   0.700[m
+[32m+[m[32mrace_ethnicityHispanic or Latino                0.61522    1.42053   0.433[m
+[32m+[m[32mrace_ethnicityMore than one race                0.99800    1.50053   0.665[m
+[32m+[m[32mrace_ethnicityOther race or race not reported   0.50596    1.54801   0.327[m
+[32m+[m[32mrace_ethnicityWhite                             0.18061    1.38506   0.130[m
+[32m+[m[32mfieldEngineering                               -0.08386    0.31417  -0.267[m
+[32m+[m[32mfieldHumanities and arts                        0.09449    0.30943   0.305[m
+[32m+[m[32mfieldLife sciences                             -0.03971    0.31287  -0.127[m
+[32m+[m[32mfieldMathematics and computer sciences          0.56017    0.31306   1.789[m
+[32m+[m[32mfieldOther                                      0.44429    0.31044   1.431[m
+[32m+[m[32mfieldPhysical and earth sciences               -0.51178    0.31651  -1.617[m
+[32m+[m[32mfieldPsychology and social sciences             0.45058    0.31835   1.415[m
+[32m+[m[32myear                                            0.01920    0.01371   1.400[m
+[32m+[m[32m                                              Pr(&gt;|t|)[m[41m  [m
+[32m+[m[32m(Intercept)                                     0.2676[m[41m  [m
+[32m+[m[32mrace_ethnicityAsian                             0.6178[m[41m  [m
+[32m+[m[32mrace_ethnicityBlack or African American         0.6902[m[41m  [m
+[32m+[m[32mrace_ethnicityEthnicity not reported            0.4838[m[41m  [m
+[32m+[m[32mrace_ethnicityHispanic or Latino                0.6650[m[41m  [m
+[32m+[m[32mrace_ethnicityMore than one race                0.5060[m[41m  [m
+[32m+[m[32mrace_ethnicityOther race or race not reported   0.7438[m[41m  [m
+[32m+[m[32mrace_ethnicityWhite                             0.8963[m[41m  [m
+[32m+[m[32mfieldEngineering                                0.7895[m[41m  [m
+[32m+[m[32mfieldHumanities and arts                        0.7601[m[41m  [m
+[32m+[m[32mfieldLife sciences                              0.8990[m[41m  [m
+[32m+[m[32mfieldMathematics and computer sciences          0.0736 .[m
+[32m+[m[32mfieldOther                                      0.1525[m[41m  [m
+[32m+[m[32mfieldPhysical and earth sciences                0.1060[m[41m  [m
+[32m+[m[32mfieldPsychology and social sciences             0.1570[m[41m  [m
+[32m+[m[32myear                                            0.1615[m[41m  [m
+[32m+[m[32m---[m
+[32m+[m[32mSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1[m
+[32m+[m
+[32m+[m[32mResidual standard error: 4.978 on 4179 degrees of freedom[m
+[32m+[m[32mMultiple R-squared:  0.007298,  Adjusted R-squared:  0.003735[m[41m [m
+[32m+[m[32mF-statistic: 2.048 on 15 and 4179 DF,  p-value: 0.009758</code></pre>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<p><span class="math display">\[y = -30.54 + 0.7\beta_{raceAsian} + 0.57\beta_{raceAfricanAmerican} + 1.04\beta_{raceNotReported}[m
+[32m+[m[32m+ 0.62\beta_{raceLatino} + 1\beta_{raceMorethanone} + 0.51\beta_{raceOther} + 0.18\beta_{raceWhite}[m
+[32m+[m[32m- 0.08\beta_{fieldEngineering} + 0.09\beta_{fieldHumanityandArts} -0.04\beta_{fieldLifeScience} +[m
+[32m+[m[32m0.56\beta_{fieldMathandCS} + 0.44\beta_{fieldOther} - 0.51\beta_{fieldPhysicalandEarthScience}[m
+[32m+[m[32m+0.45\beta_{fieldPhychologyandSocialScience} + 0.02\beta_{year}  + \epsilon,\]</span> <span class="math display">\[\epsilon \sim N(0, 4.978)\]</span></p>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>innovation<span class="sc">$</span>residuals <span class="ot">&lt;-</span> <span class="fu">residuals</span>(nmodel)</span>[m
+[32m+[m[32m<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_point</span>(residuals <span class="sc">~</span> <span class="fu">fitted</span>(nmodel), <span class="at">data =</span> innovation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_histogram</span>(<span class="sc">~</span>residuals,<span class="at">data =</span> innovation, <span class="at">bins=</span><span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>s245<span class="sc">::</span><span class="fu">gf_acf</span>(<span class="sc">~</span>nmodel) <span class="sc">|&gt;</span> <span class="fu">gf_lims</span>(<span class="at">y =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<p>Residuals and fitted model: It doesn’t really show linearity from this graph, so I don’t think it meets the condition.</p>[m
+[32m+[m[32m<p>Histogram of residuals: This is not normally distributed. This is a right-skewed graph. It also don’t meet the condition.</p>[m
+[32m+[m[32m<p>ACF plot of residuals: There is only one significant spike, so I would say this meets the condition.</p>[m
+[32m+[m[32m<p>Since not all of them met the conditions, I cannot draw a valid conclusion from this model.</p>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>b2 <span class="ot">&lt;-</span> innovation <span class="sc">|&gt;</span></span>[m
+[32m+[m[32m<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">select</span>(field, race_ethnicity, year, novelty) <span class="sc">|&gt;</span></span>[m
+[32m+[m[32m<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a> <span class="fu">na.omit</span>() <span class="sc">|&gt;</span></span>[m
+[32m+[m[32m<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">mutate</span>(<span class="at">preds =</span> <span class="fu">predict</span>(nmodel),</span>[m
+[32m+[m[32m<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">resids =</span> <span class="fu">resid</span>(nmodel))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<div class="cell">[m
+[32m+[m[32m<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_point</span>(novelty <span class="sc">~</span> race_ethnicity,</span>[m
+[32m+[m[32m<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a> <span class="at">data =</span> b2) <span class="sc">|&gt;</span></span>[m
+[32m+[m[32m<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">gf_line</span>(preds <span class="sc">~</span> race_ethnicity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>[m
+[32m+[m[32m<div class="cell-output-display">[m
+[32m+[m[32m<p><img src="Case-Study-Diversity-and-Innovation_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m</div>[m
+[32m+[m[32m<p>I don’t know why somehow the line doesn’t show.</p>[m
+[32m+[m
+[32m+[m[32m</main>[m
+[32m+[m[32m<!-- /main column -->[m
+[32m+[m[32m<script id="quarto-html-after-body" type="application/javascript">[m
+[32m+[m[32mwindow.document.addEventListener("DOMContentLoaded", function (event) {[m
+[32m+[m[32m  const toggleBodyColorMode = (bsSheetEl) => {[m
+[32m+[m[32m    const mode = bsSheetEl.getAttribute("data-mode");[m
+[32m+[m[32m    const bodyEl = window.document.querySelector("body");[m
+[32m+[m[32m    if (mode === "dark") {[m
+[32m+[m[32m      bodyEl.classList.add("quarto-dark");[m
+[32m+[m[32m      bodyEl.classList.remove("quarto-light");[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      bodyEl.classList.add("quarto-light");[m
+[32m+[m[32m      bodyEl.classList.remove("quarto-dark");[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m[32m  const toggleBodyColorPrimary = () => {[m
+[32m+[m[32m    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");[m
+[32m+[m[32m    if (bsSheetEl) {[m
+[32m+[m[32m      toggleBodyColorMode(bsSheetEl);[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m[32m  toggleBodyColorPrimary();[m[41m  [m
+[32m+[m[32m  const icon = "";[m
+[32m+[m[32m  const anchorJS = new window.AnchorJS();[m
+[32m+[m[32m  anchorJS.options = {[m
+[32m+[m[32m    placement: 'right',[m
+[32m+[m[32m    icon: icon[m
+[32m+[m[32m  };[m
+[32m+[m[32m  anchorJS.add('.anchored');[m
+[32m+[m[32m  const isCodeAnnotation = (el) => {[m
+[32m+[m[32m    for (const clz of el.classList) {[m
+[32m+[m[32m      if (clz.startsWith('code-annotation-')) {[m[41m                     [m
+[32m+[m[32m        return true;[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return false;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  const clipboard = new window.ClipboardJS('.code-copy-button', {[m
+[32m+[m[32m    text: function(trigger) {[m
+[32m+[m[32m      const codeEl = trigger.previousElementSibling.cloneNode(true);[m
+[32m+[m[32m      for (const childEl of codeEl.children) {[m
+[32m+[m[32m        if (isCodeAnnotation(childEl)) {[m
+[32m+[m[32m          childEl.remove();[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m      return codeEl.innerText;[m
+[32m+[m[32m    }[m
+[32m+[m[32m  });[m
+[32m+[m[32m  clipboard.on('success', function(e) {[m
+[32m+[m[32m    // button target[m
+[32m+[m[32m    const button = e.trigger;[m
+[32m+[m[32m    // don't keep focus[m
+[32m+[m[32m    button.blur();[m
+[32m+[m[32m    // flash "checked"[m
+[32m+[m[32m    button.classList.add('code-copy-button-checked');[m
+[32m+[m[32m    var currentTitle = button.getAttribute("title");[m
+[32m+[m[32m    button.setAttribute("title", "Copied!");[m
+[32m+[m[32m    let tooltip;[m
+[32m+[m[32m    if (window.bootstrap) {[m
+[32m+[m[32m      button.setAttribute("data-bs-toggle", "tooltip");[m
+[32m+[m[32m      button.setAttribute("data-bs-placement", "left");[m
+[32m+[m[32m      button.setAttribute("data-bs-title", "Copied!");[m
+[32m+[m[32m      tooltip = new bootstrap.Tooltip(button,[m[41m [m
+[32m+[m[32m        { trigger: "manual",[m[41m [m
+[32m+[m[32m          customClass: "code-copy-button-tooltip",[m
+[32m+[m[32m          offset: [0, -8]});[m
+[32m+[m[32m      tooltip.show();[m[41m    [m
+[32m+[m[32m    }[m
+[32m+[m[32m    setTimeout(function() {[m
+[32m+[m[32m      if (tooltip) {[m
+[32m+[m[32m        tooltip.hide();[m
+[32m+[m[32m        button.removeAttribute("data-bs-title");[m
+[32m+[m[32m        button.removeAttribute("data-bs-toggle");[m
+[32m+[m[32m        button.removeAttribute("data-bs-placement");[m
+[32m+[m[32m      }[m
+[32m+[m[32m      button.setAttribute("title", currentTitle);[m
+[32m+[m[32m      button.classList.remove('code-copy-button-checked');[m
+[32m+[m[32m    }, 1000);[m
+[32m+[m[32m    // clear code selection[m
+[32m+[m[32m    e.clearSelection();[m
+[32m+[m[32m  });[m
+[32m+[m[32m  function tippyHover(el, contentFn) {[m
+[32m+[m[32m    const config = {[m
+[32m+[m[32m      allowHTML: true,[m
+[32m+[m[32m      content: contentFn,[m
+[32m+[m[32m      maxWidth: 500,[m
+[32m+[m[32m      delay: 100,[m
+[32m+[m[32m      arrow: false,[m
+[32m+[m[32m      appendTo: function(el) {[m
+[32m+[m[32m          return el.parentElement;[m
+[32m+[m[32m      },[m
+[32m+[m[32m      interactive: true,[m
+[32m+[m[32m      interactiveBorder: 10,[m
+[32m+[m[32m      theme: 'quarto',[m
+[32m+[m[32m      placement: 'bottom-start'[m
+[32m+[m[32m    };[m
+[32m+[m[32m    window.tippy(el, config);[m[41m [m
+[32m+[m[32m  }[m
+[32m+[m[32m  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');[m
+[32m+[m[32m  for (var i=0; i<noterefs.length; i++) {[m
+[32m+[m[32m    const ref = noterefs[i];[m
+[32m+[m[32m    tippyHover(ref, function() {[m
+[32m+[m[32m      // use id or data attribute instead here[m
+[32m+[m[32m      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');[m
+[32m+[m[32m      try { href = new URL(href).hash; } catch {}[m
+[32m+[m[32m      const id = href.replace(/^#\/?/, "");[m
+[32m+[m[32m      const note = window.document.getElementById(id);[m
+[32m+[m[32m      return note.innerHTML;[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+[32m+[m[32m      let selectedAnnoteEl;[m
+[32m+[m[32m      const selectorForAnnotation = ( cell, annotation) => {[m
+[32m+[m[32m        let cellAttr = 'data-code-cell="' + cell + '"';[m
+[32m+[m[32m        let lineAttr = 'data-code-annotation="' +  annotation + '"';[m
+[32m+[m[32m        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';[m
+[32m+[m[32m        return selector;[m
+[32m+[m[32m      }[m
+[32m+[m[32m      const selectCodeLines = (annoteEl) => {[m
+[32m+[m[32m        const doc = window.document;[m
+[32m+[m[32m        const targetCell = annoteEl.getAttribute("data-target-cell");[m
+[32m+[m[32m        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");[m
+[32m+[m[32m        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));[m
+[32m+[m[32m        const lines = annoteSpan.getAttribute("data-code-lines").split(",");[m
+[32m+[m[32m        const lineIds = lines.map((line) => {[m
+[32m+[m[32m          return targetCell + "-" + line;[m
+[32m+[m[32m        })[m
+[32m+[m[32m        let top = null;[m
+[32m+[m[32m        let height = null;[m
+[32m+[m[32m        let parent = null;[m
+[32m+[m[32m        if (lineIds.length > 0) {[m
+[32m+[m[32m            //compute the position of the single el (top and bottom and make a div)[m
+[32m+[m[32m            const el = window.document.getElementById(lineIds[0]);[m
+[32m+[m[32m            top = el.offsetTop;[m
+[32m+[m[32m            height = el.offsetHeight;[m
+[32m+[m[32m            parent = el.parentElement.parentElement;[m
+[32m+[m[32m          if (lineIds.length > 1) {[m
+[32m+[m[32m            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);[m
+[32m+[m[32m            const bottom = lastEl.offsetTop + lastEl.offsetHeight;[m
+[32m+[m[32m            height = bottom - top;[m
+[32m+[m[32m          }[m
+[32m+[m[32m          if (top !== null && height !== null && parent !== null) {[m
+[32m+[m[32m            // cook up a div (if necessary) and position it[m[41m [m
+[32m+[m[32m            let div = window.document.getElementById("code-annotation-line-highlight");[m
+[32m+[m[32m            if (div === null) {[m
+[32m+[m[32m              div = window.document.createElement("div");[m
+[32m+[m[32m              div.setAttribute("id", "code-annotation-line-highlight");[m
+[32m+[m[32m              div.style.position = 'absolute';[m
+[32m+[m[32m              parent.appendChild(div);[m
+[32m+[m[32m            }[m
+[32m+[m[32m            div.style.top = top - 2 + "px";[m
+[32m+[m[32m            div.style.height = height + 4 + "px";[m
+[32m+[m[32m            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");[m
+[32m+[m[32m            if (gutterDiv === null) {[m
+[32m+[m[32m              gutterDiv = window.document.createElement("div");[m
+[32m+[m[32m              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");[m
+[32m+[m[32m              gutterDiv.style.position = 'absolute';[m
+[32m+[m[32m              const codeCell = window.document.getElementById(targetCell);[m
+[32m+[m[32m              const gutter = codeCell.querySelector('.code-annotation-gutter');[m
+[32m+[m[32m              gutter.appendChild(gutterDiv);[m
+[32m+[m[32m            }[m
+[32m+[m[32m            gutterDiv.style.top = top - 2 + "px";[m
+[32m+[m[32m            gutterDiv.style.height = height + 4 + "px";[m
+[32m+[m[32m          }[m
+[32m+[m[32m          selectedAnnoteEl = annoteEl;[m
+[32m+[m[32m        }[m
+[32m+[m[32m      };[m
+[32m+[m[32m      const unselectCodeLines = () => {[m
+[32m+[m[32m        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];[m
+[32m+[m[32m        elementsIds.forEach((elId) => {[m
+[32m+[m[32m          const div = window.document.getElementById(elId);[m
+[32m+[m[32m          if (div) {[m
+[32m+[m[32m            div.remove();[m
+[32m+[m[32m          }[m
+[32m+[m[32m        });[m
+[32m+[m[32m        selectedAnnoteEl = undefined;[m
+[32m+[m[32m      };[m
+[32m+[m[32m      // Attach click handler to the DT[m
+[32m+[m[32m      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');[m
+[32m+[m[32m      for (const annoteDlNode of annoteDls) {[m
+[32m+[m[32m        annoteDlNode.addEventListener('click', (event) => {[m
+[32m+[m[32m          const clickedEl = event.target;[m
+[32m+[m[32m          if (clickedEl !== selectedAnnoteEl) {[m
+[32m+[m[32m            unselectCodeLines();[m
+[32m+[m[32m            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');[m
+[32m+[m[32m            if (activeEl) {[m
+[32m+[m[32m              activeEl.classList.remove('code-annotation-active');[m
+[32m+[m[32m            }[m
+[32m+[m[32m            selectCodeLines(clickedEl);[m
+[32m+[m[32m            clickedEl.classList.add('code-annotation-active');[m
+[32m+[m[32m          } else {[m
+[32m+[m[32m            // Unselect the line[m
+[32m+[m[32m            unselectCodeLines();[m
+[32m+[m[32m            clickedEl.classList.remove('code-annotation-active');[m
+[32m+[m[32m          }[m
+[32m+[m[32m        });[m
+[32m+[m[32m      }[m
+[32m+[m[32m  const findCites = (el) => {[m
+[32m+[m[32m    const parentEl = el.parentElement;[m
+[32m+[m[32m    if (parentEl) {[m
+[32m+[m[32m      const cites = parentEl.dataset.cites;[m
+[32m+[m[32m      if (cites) {[m
+[32m+[m[32m        return {[m
+[32m+[m[32m          el,[m
+[32m+[m[32m          cites: cites.split(' ')[m
+[32m+[m[32m        };[m
+[32m+[m[32m      } else {[m
+[32m+[m[32m        return findCites(el.parentElement)[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      return undefined;[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m[32m  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');[m
+[32m+[m[32m  for (var i=0; i<bibliorefs.length; i++) {[m
+[32m+[m[32m    const ref = bibliorefs[i];[m
+[32m+[m[32m    const citeInfo = findCites(ref);[m
+[32m+[m[32m    if (citeInfo) {[m
+[32m+[m[32m      tippyHover(citeInfo.el, function() {[m
+[32m+[m[32m        var popup = window.document.createElement('div');[m
+[32m+[m[32m        citeInfo.cites.forEach(function(cite) {[m
+[32m+[m[32m          var citeDiv = window.document.createElement('div');[m
+[32m+[m[32m          citeDiv.classList.add('hanging-indent');[m
+[32m+[m[32m          citeDiv.classList.add('csl-entry');[m
+[32m+[m[32m          var biblioDiv = window.document.getElementById('ref-' + cite);[m
+[32m+[m[32m          if (biblioDiv) {[m
+[32m+[m[32m            citeDiv.innerHTML = biblioDiv.innerHTML;[m
+[32m+[m[32m          }[m
+[32m+[m[32m          popup.appendChild(citeDiv);[m
+[32m+[m[32m        });[m
+[32m+[m[32m        return popup.innerHTML;[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m[32m});[m
+[32m+[m[32m</script>[m
+[32m+[m[32m</div> <!-- /content -->[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m</body></html>[m
+\ No newline at end of file[m
+[1mdiff --git a/Case Study:Diversity and Innovation.qmd b/Case Study:Diversity and Innovation.qmd[m
+[1mnew file mode 100644[m
+[1mindex 0000000..fcda530[m
+[1m--- /dev/null[m
+[1m+++ b/Case Study:Diversity and Innovation.qmd[m	
+[36m@@ -0,0 +1,84 @@[m
+[32m+[m[32m---[m
+[32m+[m[32mtitle: "Case Study:Diversity and Innovation"[m
+[32m+[m[32mformat: pdf[m
+[32m+[m[32meditor: visual[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32m#| label: setup[m
+[32m+[m[32m#| include: false[m
+[32m+[m[32mlibrary(tidyverse)[m
+[32m+[m[32mlibrary(ggformula)[m
+[32m+[m[32mlibrary(ggplot2)[m
+[32m+[m[32mlibrary(ggeffects)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mPlanning a model: the response would be novelty, and predictors are sex and race ethnicity. I wanted to know if sex and race would have any correlation with innovation level.[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32minnovation <- read_csv('https://sldr.netlify.app/data/phd_innovation.csv', show_col_types = FALSE)[m
+[32m+[m[32mmodel <- lm(novelty ~ sex + race_ethnicity, data = innovation)[m
+[32m+[m[32mnrow(innovation)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32mgf_boxplot(novelty ~ sex, data = innovation)[m
+[32m+[m[32mgf_boxplot(novelty ~ race_ethnicity, data = innovation)[m
+[32m+[m[32mgf_point(novelty ~ year, data = innovation)[m
+[32m+[m[32mgf_boxplot(novelty ~ field, data = innovation)[m
+[32m+[m[32mgf_bar( ~ field,[m[41m [m
+[32m+[m[32m        fill = ~ race_ethnicity,[m
+[32m+[m[32m        data = innovation,[m[41m [m
+[32m+[m[32m        position = 'dodge')[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mThe graph between novelty and sex doesn't show much since they have very similar median and IQR. The graph between novelty and race ethnicity shows a dominant lead for White followed by Asians and Black or African American. I can also see a small trend as the year goes on the novelty level tend to be down a little bit. There are some fields are leading the novelty level but I can't really tell since the names are all overlapped.[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32msummary(model)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mCausal Diagram:[m
+[32m+[m
+[32m+[m[32mMy main predictor is race ethnicity with my response variable novelty. I made sex as a moderator since it doesn't affect novelty level directly. Both field and year showed a reasonable correlation with novelty. I would include race ethnicity, field, and year as my predictors to my new model.[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32mnmodel <- lm(novelty ~ race_ethnicity + field + year, data = innovation)[m
+[32m+[m[32msummary(nmodel)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m$$y = -30.54 + 0.7\beta_{raceAsian} + 0.57\beta_{raceAfricanAmerican} + 1.04\beta_{raceNotReported}$$[m
+[32m+[m[32m$$+ 0.62\beta_{raceLatino} + 1\beta_{raceMorethanone} + 0.51\beta_{raceOther} + 0.18\beta_{raceWhite}$$[m
+[32m+[m[32m $$- 0.08\beta_{fieldEngineering} + 0.09\beta_{fieldHumanityandArts} -0.04\beta_{fieldLifeScience} $$$$+0.56\beta_{fieldMathandCS} + 0.44\beta_{fieldOther} - 0.51\beta_{fieldPhysicalandEarthScience}$$[m
+[32m+[m[32m$$ +0.45\beta_{fieldPhychologyandSocialScience} + 0.02\beta_{year}  + \epsilon,$$ $$\epsilon \sim N(0, 4.978)$$[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32minnovation$residuals <- residuals(nmodel)[m
+[32m+[m[32mgf_point(residuals ~ fitted(nmodel), data = innovation)[m
+[32m+[m[32mgf_histogram(~residuals,data = innovation, bins=100)[m
+[32m+[m[32ms245::gf_acf(~nmodel) |> gf_lims(y = c(-1,1))[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mResiduals and fitted model: It doesn't really show linearity from this graph, so I don't think it meets the condition.[m
+[32m+[m
+[32m+[m[32mHistogram of residuals: This is not normally distributed. This is a right-skewed graph. It also don't meet the condition.[m
+[32m+[m
+[32m+[m[32mACF plot of residuals: There is only one significant spike, so I would say this meets the condition.[m
+[32m+[m
+[32m+[m[32mSince not all of them met the conditions, I cannot draw a valid conclusion from this model.[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32mb2 <- innovation |>[m
+[32m+[m[32m select(field, race_ethnicity, year, novelty) |>[m
+[32m+[m[32m na.omit() |>[m
+[32m+[m[32m mutate(preds = predict(nmodel),[m
+[32m+[m[32m        resids = resid(nmodel))[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m```{r}[m
+[32m+[m[32mgf_point(novelty ~ race_ethnicity,[m
+[32m+[m[32m data = b2) |>[m
+[32m+[m[32mgf_line(preds ~ race_ethnicity)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mI don't know why somehow the line doesn't show.[m
+[1mdiff --git a/Case Study:Diversity and Innovation_files/libs/bootstrap/bootstrap-icons.css b/Case Study:Diversity and Innovation_files/libs/bootstrap/bootstrap-icons.css[m
+[1mnew file mode 100644[m
+[1mindex 0000000..94f1940[m
+[1m--- /dev/null[m
+[1m+++ b/Case Study:Diversity and Innovation_files/libs/bootstrap/bootstrap-icons.css[m	
+[36m@@ -0,0 +1,2018 @@[m
+[32m+[m[32m@font-face {[m
+[32m+[m[32m  font-display: block;[m
+[32m+[m[32m  font-family: "bootstrap-icons";[m
+[32m+[m[32m  src:[m[41m [m
+[32m+[m[32murl("./bootstrap-icons.woff?2ab2cbbe07fcebb53bdaa7313bb290f2") format("woff");[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.bi::before,[m
+[32m+[m[32m[class^="bi-"]::before,[m
+[32m+[m[32m[class*=" bi-"]::before {[m
+[32m+[m[32m  display: inline-block;[m
+[32m+[m[32m  font-family: bootstrap-icons !important;[m
+[32m+[m[32m  font-style: normal;[m
+[32m+[m[32m  font-weight: normal !important;[m
+[32m+[m[32m  font-variant: normal;[m
+[32m+[m[32m  text-transform: none;[m
+[32m+[m[32m  line-height: 1;[m
+[32m+[m[32m  vertical-align: -.125em;[m
+[32m+[m[32m  -webkit-font-smoothing: antialiased;[m
+[32m+[m[32m  -moz-osx-font-smoothing: grayscale;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.bi-123::before { content: "\f67f"; }[m
+[32m+[m[32m.bi-alarm-fill::before { content: "\f101"; }[m
+[32m+[m[32m.bi-alarm::before { content: "\f102"; }[m
+[32m+[m[32m.bi-align-bottom::before { content: "\f103"; }[m
+[32m+[m[32m.bi-align-center::before { content: "\f104"; }[m
+[32m+[m[32m.bi-align-end::before { content: "\f105"; }[m
+[32m+[m[32m.bi-align-middle::before { content: "\f106"; }[m
+[32m+[m[32m.bi-align-start::before { content: "\f107"; }[m
+[32m+[m[32m.bi-align-top::before { content: "\f108"; }[m
+[32m+[m[32m.bi-alt::before { content: "\f109"; }[m
+[32m+[m[32m.bi-app-indicator::before { content: "\f10a"; }[m
+[32m+[m[32m.bi-app::before { content: "\f10b"; }[m
+[32m+[m[32m.bi-archive-fill::before { content: "\f10c"; }[m
+[32m+[m[32m.bi-archive::before { content: "\f10d"; }[m
+[32m+[m[32m.bi-arrow-90deg-down::before { content: "\f10e"; }[m
+[32m+[m[32m.bi-arrow-90deg-left::before { content: "\f10f"; }[m
+[32m+[m[32m.bi-arrow-90deg-right::before { content: "\f110"; }[m
+[32m+[m[32m.bi-arrow-90deg-up::before { content: "\f111"; }[m
+[32m+[m[32m.bi-arrow-bar-down::before { content: "\f112"; }[m
+[32m+[m[32m.bi-arrow-bar-left::before { content: "\f113"; }[m
+[32m+[m[32m.bi-arrow-bar-right::before { content: "\f114"; }[m
+[32m+[m[32m.bi-arrow-bar-up::before { content: "\f115"; }[m
+[32m+[m[32m.bi-arrow-clockwise::before { content: "\f116"; }[m
+[32m+[m[32m.bi-arrow-counterclockwise::before { content: "\f117"; }[m
+[32m+[m[32m.bi-arrow-down-circle-fill::before { content: "\f118"; }[m
+[32m+[m[32m.bi-arrow-down-circle::before { content: "\f119"; }[m
+[32m+[m[32m.bi-arrow-down-left-circle-fill::before { content: "\f11a"; }[m
+[32m+[m[32m.bi-arrow-down-left-circle::before { content: "\f11b"; }[m
+[32m+[m[32m.bi-arrow-down-left-square-fill::before { content: "\f11c"; }[m
+[32m+[m[32m.bi-arrow-down-left-square::before { content: "\f11d"; }[m
+[32m+[m[32m.bi-arrow-down-left::before { content: "\f11e"; }[m
+[32m+[m[32m.bi-arrow-down-right-circle-fill::before { content: "\f11f"; }[m
+[32m+[m[32m.bi-arrow-down-right-circle::before { content: "\f120"; }[m
+[32m+[m[32m.bi-arrow-down-right-square-fill::before { content: "\f121"; }[m
+[32m+[m[32m.bi-arrow-down-right-square::before { content: "\f122"; }[m
+[32m+[m[32m.bi-arrow-down-right::before { content: "\f123"; }[m
+[32m+[m[32m.bi-arrow-down-short::before { content: "\f124"; }[m
+[32m+[m[32m.bi-arrow-down-square-fill::before { content: "\f125"; }[m
+[32m+[m[32m.bi-arrow-down-square::before { content: "\f126"; }[m
+[32m+[m[32m.bi-arrow-down-up::before { content: "\f127"; }[m
+[32m+[m[32m.bi-arrow-down::before { content: "\f128"; }[m
+[32m+[m[32m.bi-arrow-left-circle-fill::before { content: "\f129"; }[m
+[32m+[m[32m.bi-arrow-left-circle::before { content: "\f12a"; }[m
+[32m+[m[32m.bi-arrow-left-right::before { content: "\f12b"; }[m
+[32m+[m[32m.bi-arrow-left-short::before { content: "\f12c"; }[m
+[32m+[m[32m.bi-arrow-left-square-fill::before { content: "\f12d"; }[m
+[32m+[m[32m.bi-arrow-left-square::before { content: "\f12e"; }[m
+[32m+[m[32m.bi-arrow-left::before { content: "\f12f"; }[m
+[32m+[m[32m.bi-arrow-repeat::before { content: "\f130"; }[m
+[32m+[m[32m.bi-arrow-return-left::before { content: "\f131"; }[m
+[32m+[m[32m.bi-arrow-return-right::before { content: "\f132"; }[m
+[32m+[m[32m.bi-arrow-right-circle-fill::before { content: "\f133"; }[m
+[32m+[m[32m.bi-arrow-right-circle::before { content: "\f134"; }[m
+[32m+[m[32m.bi-arrow-right-short::before { content: "\f135"; }[m
+[32m+[m[32m.bi-arrow-right-square-fill::before { content: "\f136"; }[m
+[32m+[m[32m.bi-arrow-right-square::before { content: "\f137"; }[m
+[32m+[m[32m.bi-arrow-right::before { content: "\f138"; }[m
+[32m+[m[32m.bi-arrow-up-circle-fill::before { content: "\f139"; }[m
+[32m+[m[32m.bi-arrow-up-circle::before { content: "\f13a"; }[m
+[32m+[m[32m.bi-arrow-up-left-circle-fill::before { content: "\f13b"; }[m
+[32m+[m[32m.bi-arrow-up-left-circle::before { content: "\f13c"; }[m
+[32m+[m[32m.bi-arrow-up-left-square-fill::before { content: "\f13d"; }[m
+[32m+[m[32m.bi-arrow-up-left-square::before { content: "\f13e"; }[m
+[32m+[m[32m.bi-arrow-up-left::before { content: "\f13f"; }[m
+[32m+[m[32m.bi-arrow-up-right-circle-fill::before { content: "\f140"; }[m
+[32m+[m[32m.bi-arrow-up-right-circle::before { content: "\f141"; }[m
+[32m+[m[32m.bi-arrow-up-right-square-fill::before { content: "\f142"; }[m
+[32m+[m[32m.bi-arrow-up-right-square::before { content: "\f143"; }[m
+[32m+[m[32m.bi-arrow-up-right::before { content: "\f144"; }[m
+[32m+[m[32m.bi-arrow-up-short::before { content: "\f145"; }[m
+[32m+[m[32m.bi-arrow-up-square-fill::before { content: "\f146"; }[m
+[32m+[m[32m.bi-arrow-up-square::before { content: "\f147"; }[m
+[32m+[m[32m.bi-arrow-up::before { content: "\f148"; }[m
+[32m+[m[32m.bi-arrows-angle-contract::before { content: "\f149"; }[m
+[32m+[m[32m.bi-arrows-angle-expand::before { content: "\f14a"; }[m
+[32m+[m[32m.bi-arrows-collapse::before { content: "\f14b"; }[m
+[32m+[m[32m.bi-arrows-expand::before { content: "\f14c"; }[m
+[32m+[m[32m.bi-arrows-fullscreen::before { content: "\f14d"; }[m
+[32m+[m[32m.bi-arrows-move::before { content: "\f14e"; }[m
+[32m+[m[32m.bi-aspect-ratio-fill::before { content: "\f14f"; }[m
+[32m+[m[32m.bi-aspect-ratio::before { content: "\f150"; }[m
+[32m+[m[32m.bi-asterisk::before { content: "\f151"; }[m
+[32m+[m[32m.bi-at::before { content: "\f152"; }[m
+[32m+[m[32m.bi-award-fill::before { content: "\f153"; }[m
+[32m+[m[32m.bi-award::before { content: "\f154"; }[m
+[32m+[m[32m.bi-back::before { content: "\f155"; }[m
+[32m+[m[32m.bi-backspace-fill::before { content: "\f156"; }[m
+[32m+[m[32m.bi-backspace-reverse-fill::before { content: "\f157"; }[m
+[32m+[m[32m.bi-backspace-reverse::before { content: "\f158"; }[m
+[32m+[m[32m.bi-backspace::before { content: "\f159"; }[m
+[32m+[m[32m.bi-badge-3d-fill::before { content: "\f15a"; }[m
+[32m+[m[32m.bi-badge-3d::before { content: "\f15b"; }[m
+[32m+[m[32m.bi-badge-4k-fill::before { content: "\f15c"; }[m
+[32m+[m[32m.bi-badge-4k::before { content: "\f15d"; }[m
+[32m+[m[32m.bi-badge-8k-fill::before { content: "\f15e"; }[m
+[32m+[m[32m.bi-badge-8k::before { content: "\f15f"; }[m
+[32m+[m[32m.bi-badge-ad-fill::before { content: "\f160"; }[m
+[32m+[m[32m.bi-badge-ad::before { content: "\f161"; }[m
+[32m+[m[32m.bi-badge-ar-fill::before { content: "\f162"; }[m
+[32m+[m[32m.bi-badge-ar::before { content: "\f163"; }[m
+[32m+[m[32m.bi-badge-cc-fill::before { content: "\f164"; }[m
+[32m+[m[32m.bi-badge-cc::before { content: "\f165"; }[m
+[32m+[m[32m.bi-badge-hd-fill::before { content: "\f166"; }[m
+[32m+[m[32m.bi-badge-hd::before { content: "\f167"; }[m
+[32m+[m[32m.bi-badge-tm-fill::before { content: "\f168"; }[m
+[32m+[m[32m.bi-badge-tm::before { content: "\f169"; }[m
+[32m+[m[32m.bi-badge-vo-fill::before { content: "\f16a"; }[m
+[32m+[m[32m.bi-badge-vo::before { content: "\f16b"; }[m
+[32m+[m[32m.bi-badge-vr-fill::before { content: "\f16c"; }[m
+[32m+[m[32m.bi-badge-vr::before { content: "\f16d"; }[m
+[32m+[m[32m.bi-badge-wc-fill::before { content: "\f16e"; }[m
+[32m+[m[32m.bi-badge-wc::before { content: "\f16f"; }[m
+[32m+[m[32m.bi-bag-check-fill::before { content: "\f170"; }[m
+[32m+[m[32m.bi-bag-check::before { content: "\f171"; }[m
+[32m+[m[32m.bi-bag-dash-fill::before { content: "\f172"; }[m
+[32m+[m[32m.bi-bag-dash::before { content: "\f173"; }[m
+[32m+[m[32m.bi-bag-fill::before { content: "\f174"; }[m
+[32m+[m[32m.bi-bag-plus-fill::before { content: "\f175"; }[m
+[32m+[m[32m.bi-bag-plus::before { content: "\f176"; }[m
+[32m+[m[32m.bi-bag-x-fill::before { content: "\f177"; }[m
+[32m+[m[32m.bi-bag-x::before { content: "\f178"; }[m
+[32m+[m[32m.bi-bag::before { content: "\f179"; }[m
+[32m+[m[32m.bi-bar-chart-fill::before { content: "\f17a"; }[m
+[32m+[m[32m.bi-bar-chart-line-fill::before { content: "\f17b"; }[m
+[32m+[m[32m.bi-bar-chart-line::before { content: "\f17c"; }[m
+[32m+[m[32m.bi-bar-chart-steps::before { content: "\f17d"; }[m
+[32m+[m[32m.bi-bar-chart::before { content: "\f17e"; }[m
+[32m+[m[32m.bi-basket-fill::before { content: "\f17f"; }[m
+[32m+[m[32m.bi-basket::before { content: "\f180"; }[m
+[32m+[m[32m.bi-basket2-fill::before { content: "\f181"; }[m
+[32m+[m[32m.bi-basket2::before { content: "\f182"; }[m
+[32m+[m[32m.bi-basket3-fill::before { content: "\f183"; }[m
+[32m+[m[32m.bi-basket3::before { content: "\f184"; }[m
+[32m+[m[32m.bi-battery-charging::before { content: "\f185"; }[m
+[32m+[m[32m.bi-battery-full::before { content: "\f186"; }[m
+[32m+[m[32m.bi-battery-half::before { content: "\f187"; }[m
+[32m+[m[32m.bi-battery::before { content: "\f188"; }[m
+[32m+[m[32m.bi-bell-fill::before { content: "\f189"; }[m
+[32m+[m[32m.bi-bell::before { content: "\f18a"; }[m
+[32m+[m[32m.bi-bezier::before { content: "\f18b"; }[m
+[32m+[m[32m.bi-bezier2::before { content: "\f18c"; }[m
+[32m+[m[32m.bi-bicycle::before { content: "\f18d"; }[m
+[32m+[m[32m.bi-binoculars-fill::before { content: "\f18e"; }[m
+[32m+[m[32m.bi-binoculars::before { content: "\f18f"; }[m
+[32m+[m[32m.bi-blockquote-left::before { content: "\f190"; }[m
+[32m+[m[32m.bi-blockquote-right::before { content: "\f191"; }[m
+[32m+[m[32m.bi-book-fill::before { content: "\f192"; }[m
+[32m+[m[32m.bi-book-half::before { content: "\f193"; }[m
+[32m+[m[32m.bi-book::before { content: "\f194"; }[m
+[32m+[m[32m.bi-bookmark-check-fill::before { content: "\f195"; }[m
+[32m+[m[32m.bi-bookmark-check::before { content: "\f196"; }[m
+[32m+[m[32m.bi-bookmark-dash-fill::before { content: "\f197"; }[m
+[32m+[m[32m.bi-bookmark-dash::before { content: "\f198"; }[m
+[32m+[m[32m.bi-bookmark-fill::before { content: "\f199"; }[m
+[32m+[m[32m.bi-bookmark-heart-fill::before { content: "\f19a"; }[m
+[32m+[m[32m.bi-bookmark-heart::before { content: "\f19b"; }[m
+[32m+[m[32m.bi-bookmark-plus-fill::before { content: "\f19c"; }[m
+[32m+[m[32m.bi-bookmark-plus::before { content: "\f19d"; }[m
+[32m+[m[32m.bi-bookmark-star-fill::before { content: "\f19e"; }[m
+[32m+[m[32m.bi-bookmark-star::before { content: "\f19f"; }[m
+[32m+[m[32m.bi-bookmark-x-fill::before { content: "\f1a0"; }[m
+[32m+[m[32m.bi-bookmark-x::before { content: "\f1a1"; }[m
+[32m+[m[32m.bi-bookmark::before { content: "\f1a2"; }[m
+[32m+[m[32m.bi-bookmarks-fill::before { content: "\f1a3"; }[m
+[32m+[m[32m.bi-bookmarks::before { content: "\f1a4"; }[m
+[32m+[m[32m.bi-bookshelf::before { content: "\f1a5"; }[m
+[32m+[m[32m.bi-bootstrap-fill::before { content: "\f1a6"; }[m
+[32m+[m[32m.bi-bootstrap-reboot::before { content: "\f1a7"; }[m
+[32m+[m[32m.bi-bootstrap::before { content: "\f1a8"; }[m
+[32m+[m[32m.bi-border-all::before { content: "\f1a9"; }[m
+[32m+[m[32m.bi-border-bottom::before { content: "\f1aa"; }[m
+[32m+[m[32m.bi-border-center::before { content: "\f1ab"; }[m
+[32m+[m[32m.bi-border-inner::before { content: "\f1ac"; }[m
+[32m+[m[32m.bi-border-left::before { content: "\f1ad"; }[m
+[32m+[m[32m.bi-border-middle::before { content: "\f1ae"; }[m
+[32m+[m[32m.bi-border-outer::before { content: "\f1af"; }[m
+[32m+[m[32m.bi-border-right::before { content: "\f1b0"; }[m
+[32m+[m[32m.bi-border-style::before { content: "\f1b1"; }[m
+[32m+[m[32m.bi-border-top::before { content: "\f1b2"; }[m
+[32m+[m[32m.bi-border-width::before { content: "\f1b3"; }[m
+[32m+[m[32m.bi-border::before { content: "\f1b4"; }[m
+[32m+[m[32m.bi-bounding-box-circles::before { content: "\f1b5"; }[m
+[32m+[m[32m.bi-bounding-box::before { content: "\f1b6"; }[m
+[32m+[m[32m.bi-box-arrow-down-left::before { content: "\f1b7"; }[m
+[32m+[m[32m.bi-box-arrow-down-right::before { content: "\f1b8"; }[m
+[32m+[m[32m.bi-box-arrow-down::before { content: "\f1b9"; }[m
+[32m+[m[32m.bi-box-arrow-in-down-left::before { content: "\f1ba"; }[m
+[32m+[m[32m.bi-box-arrow-in-down-right::before { content: "\f1bb"; }[m
+[32m+[m[32m.bi-box-arrow-in-down::before { content: "\f1bc"; }[m
+[32m+[m[32m.bi-box-arrow-in-left::before { content: "\f1bd"; }[m
+[32m+[m[32m.bi-box-arrow-in-right::before { content: "\f1be"; }[m
+[32m+[m[32m.bi-box-arrow-in-up-left::before { content: "\f1bf"; }[m
+[32m+[m[32m.bi-box-arrow-in-up-right::before { content: "\f1c0"; }[m
+[32m+[m[32m.bi-box-arrow-in-up::before { content: "\f1c1"; }[m
+[32m+[m[32m.bi-box-arrow-left::before { content: "\f1c2"; }[m
+[32m+[m[32m.bi-box-arrow-right::before { content: "\f1c3"; }[m
+[32m+[m[32m.bi-box-arrow-up-left::before { content: "\f1c4"; }[m
+[32m+[m[32m.bi-box-arrow-up-right::before { content: "\f1c5"; }[m
+[32m+[m[32m.bi-box-arrow-up::before { content: "\f1c6"; }[m
+[32m+[m[32m.bi-box-seam::before { content: "\f1c7"; }[m
+[32m+[m[32m.bi-box::before { content: "\f1c8"; }[m
+[32m+[m[32m.bi-braces::before { content: "\f1c9"; }[m
+[32m+[m[32m.bi-bricks::before { content: "\f1ca"; }[m
+[32m+[m[32m.bi-briefcase-fill::before { content: "\f1cb"; }[m
+[32m+[m[32m.bi-briefcase::before { content: "\f1cc"; }[m
+[32m+[m[32m.bi-brightness-alt-high-fill::before { content: "\f1cd"; }[m
+[32m+[m[32m.bi-brightness-alt-high::before { content: "\f1ce"; }[m
+[32m+[m[32m.bi-brightness-alt-low-fill::before { content: "\f1cf"; }[m
+[32m+[m[32m.bi-brightness-alt-low::before { content: "\f1d0"; }[m
+[32m+[m[32m.bi-brightness-high-fill::before { content: "\f1d1"; }[m
+[32m+[m[32m.bi-brightness-high::before { content: "\f1d2"; }[m
+[32m+[m[32m.bi-brightness-low-fill::before { content: "\f1d3"; }[m
+[32m+[m[32m.bi-brightness-low::before { content: "\f1d4"; }[m
+[32m+[m[32m.bi-broadcast-pin::before { content: "\f1d5"; }[m
+[32m+[m[32m.bi-broadcast::before { content: "\f1d6"; }[m
+[32m+[m[32m.bi-brush-fill::before { content: "\f1d7"; }[m
+[32m+[m[32m.bi-brush::before { content: "\f1d8"; }[m
+[32m+[m[32m.bi-bucket-fill::before { content: "\f1d9"; }[m
+[32m+[m[32m.bi-bucket::before { content: "\f1da"; }[m
+[32m+[m[32m.bi-bug-fill::before { content: "\f1db"; }[m
+[32m+[m[32m.bi-bug::before { content: "\f1dc"; }[m
+[32m+[m[32m.bi-building::before { content: "\f1dd"; }[m
+[32m+[m[32m.bi-bullseye::before { content: "\f1de"; }[m
+[32m+[m[32m.bi-calculator-fill::before { content: "\f1df"; }[m
+[32m+[m[32m.bi-calculator::before { content: "\f1e0"; }[m
+[32m+[m[32m.bi-calendar-check-fill::before { content: "\f1e1"; }[m
+[32m+[m[32m.bi-calendar-check::before { content: "\f1e2"; }[m
+[32m+[m[32m.bi-calendar-date-fill::before { content: "\f1e3"; }[m
+[32m+[m[32m.bi-calendar-date::before { content: "\f1e4"; }[m
+[32m+[m[32m.bi-calendar-day-fill::before { content: "\f1e5"; }[m
+[32m+[m[32m.bi-calendar-day::before { content: "\f1e6"; }[m
+[32m+[m[32m.bi-calendar-event-fill::before { content: "\f1e7"; }[m
+[32m+[m[32m.bi-calendar-event::before { content: "\f1e8"; }[m
+[32m+[m[32m.bi-calendar-fill::before { content: "\f1e9"; }[m
+[32m+[m[32m.bi-calendar-minus-fill::before { content: "\f1ea"; }[m
+[32m+[m[32m.bi-calendar-minus::before { content: "\f1eb"; }[m
+[32m+[m[32m.bi-calendar-month-fill::before { content: "\f1ec"; }[m
+[32m+[m[32m.bi-calendar-month::before { content: "\f1ed"; }[m
+[32m+[m[32m.bi-calendar-plus-fill::before { content: "\f1ee"; }[m
+[32m+[m[32m.bi-calendar-plus::before { content: "\f1ef"; }[m
+[32m+[m[32m.bi-calendar-range-fill::before { content: "\f1f0"; }[m
+[32m+[m[32m.bi-calendar-range::before { content: "\f1f1"; }[m
+[32m+[m[32m.bi-calendar-week-fill::before { content: "\f1f2"; }[m
+[32m+[m[32m.bi-calendar-week::before { content: "\f1f3"; }[m
+[32m+[m[32m.bi-calendar-x-fill::before { content: "\f1f4"; }[m
+[32m+[m[32m.bi-calendar-x::before { content: "\f1f5"; }[m
+[32m+[m[32m.bi-calendar::before { content: "\f1f6"; }[m
+[32m+[m[32m.bi-calendar2-check-fill::before { content: "\f1f7"; }[m
+[32m+[m[32m.bi-calendar2-check::before { content: "\f1f8"; }[m
+[32m+[m[32m.bi-calendar2-date-fill::before { content: "\f1f9"; }[m
+[32m+[m[32m.bi-calendar2-date::before { content: "\f1fa"; }[m
+[32m+[m[32m.bi-calendar2-day-fill::before { content: "\f1fb"; }[m
+[32m+[m[32m.bi-calendar2-day::before { content: "\f1fc"; }[m
+[32m+[m[32m.bi-calendar2-event-fill::before { content: "\f1fd"; }[m
+[32m+[m[32m.bi-calendar2-event::before { content: "\f1fe"; }[m
+[32m+[m[32m.bi-calendar2-fill::before { content: "\f1ff"; }[m
+[32m+[m[32m.bi-calendar2-minus-fill::before { content: "\f200"; }[m
+[32m+[m[32m.bi-calendar2-minus::before { content: "\f201"; }[m
+[32m+[m[32m.bi-calendar2-month-fill::before { content: "\f202"; }[m
+[32m+[m[32m.bi-calendar2-month::before { content: "\f203"; }[m
+[32m+[m[32m.bi-calendar2-plus-fill::before { content: "\f204"; }[m
+[32m+[m[32m.bi-calendar2-plus::before { content: "\f205"; }[m
+[32m+[m[32m.bi-calendar2-range-fill::before { content: "\f206"; }[m
+[32m+[m[32m.bi-calendar2-range::before { content: "\f207"; }[m
+[32m+[m[32m.bi-calendar2-week-fill::before { content: "\f208"; }[m
+[32m+[m[32m.bi-calendar2-week::before { content: "\f209"; }[m
+[32m+[m[32m.bi-calendar2-x-fill::before { content: "\f20a"; }[m
+[32m+[m[32m.bi-calendar2-x::before { content: "\f20b"; }[m
+[32m+[m[32m.bi-calendar2::before { content: "\f20c"; }[m
+[32m+[m[32m.bi-calendar3-event-fill::before { content: "\f20d"; }[m
+[32m+[m[32m.bi-calendar3-event::before { content: "\f20e"; }[m
+[32m+[m[32m.bi-calendar3-fill::before { content: "\f20f"; }[m
+[32m+[m[32m.bi-calendar3-range-fill::before { content: "\f210"; }[m
+[32m+[m[32m.bi-calendar3-range::before { content: "\f211"; }[m
+[32m+[m[32m.bi-calendar3-week-fill::before { content: "\f212"; }[m
+[32m+[m[32m.bi-calendar3-week::before { content: "\f213"; }[m
+[32m+[m[32m.bi-calendar3::before { content: "\f214"; }[m
+[32m+[m[32m.bi-calendar4-event::before { content: "\f215"; }[m
+[32m+[m[32m.bi-calendar4-range::before { content: "\f216"; }[m
+[32m+[m[32m.bi-calendar4-week::before { content: "\f217"; }[m
+[32m+[m[32m.bi-calendar4::before { content: "\f218"; }[m
+[32m+[m[32m.bi-camera-fill::before { content: "\f219"; }[m
+[32m+[m[32m.bi-camera-reels-fill::before { content: "\f21a"; }[m
+[32m+[m[32m.bi-camera-reels::before { content: "\f21b"; }[m
+[32m+[m[32m.bi-camera-video-fill::before { content: "\f21c"; }[m
+[32m+[m[32m.bi-camera-video-off-fill::before { content: "\f21d"; }[m
+[32m+[m[32m.bi-camera-video-off::before { content: "\f21e"; }[m
+[32m+[m[32m.bi-camera-video::before { content: "\f21f"; }[m
+[32m+[m[32m.bi-camera::before { content: "\f220"; }[m
+[32m+[m[32m.bi-camera2::before { content: "\f221"; }[m
+[32m+[m[32m.bi-capslock-fill::before { content: "\f222"; }[m
+[32m+[m[32m.bi-capslock::before { content: "\f223"; }[m
+[32m+[m[32m.bi-card-checklist::before { content: "\f224"; }[m
+[32m+[m[32m.bi-card-heading::before { content: "\f225"; }[m
+[32m+[m[32m.bi-card-image::before { content: "\f226"; }[m
+[32m+[m[32m.bi-card-list::before { content: "\f227"; }[m
+[32m+[m[32m.bi-card-text::before { content: "\f228"; }[m
+[32m+[m[32m.bi-caret-down-fill::before { content: "\f229"; }[m
+[32m+[m[32m.bi-caret-down-square-fill::before { content: "\f22a"; }[m
+[32m+[m[32m.bi-caret-down-square::before { content: "\f22b"; }[m
+[32m+[m[32m.bi-caret-down::before { content: "\f22c"; }[m
+[32m+[m[32m.bi-caret-left-fill::before { content: "\f22d"; }[m
+[32m+[m[32m.bi-caret-left-square-fill::before { content: "\f22e"; }[m
+[32m+[m[32m.bi-caret-left-square::before { content: "\f22f"; }[m
+[32m+[m[32m.bi-caret-left::before { content: "\f230"; }[m
+[32m+[m[32m.bi-caret-right-fill::before { content: "\f231"; }[m
+[32m+[m[32m.bi-caret-right-square-fill::before { content: "\f232"; }[m
+[32m+[m[32m.bi-caret-right-square::before { content: "\f233"; }[m
+[32m+[m[32m.bi-caret-right::before { content: "\f234"; }[m
+[32m+[m[32m.bi-caret-up-fill::before { content: "\f235"; }[m
+[32m+[m[32m.bi-caret-up-square-fill::before { content: "\f236"; }[m
+[32m+[m[32m.bi-caret-up-square::before { content: "\f237"; }[m
+[32m+[m[32m.bi-caret-up::before { content: "\f238"; }[m
+[32m+[m[32m.bi-cart-check-fill::before { content: "\f239"; }[m
+[32m+[m[32m.bi-cart-check::before { content: "\f23a"; }[m
+[32m+[m[32m.bi-cart-dash-fill::before { content: "\f23b"; }[m
+[32m+[m[32m.bi-cart-dash::before { content: "\f23c"; }[m
+[32m+[m[32m.bi-cart-fill::before { content: "\f23d"; }[m
+[32m+[m[32m.bi-cart-plus-fill::before { content: "\f23e"; }[m
+[32m+[m[32m.bi-cart-plus::before { content: "\f23f"; }[m
+[32m+[m[32m.bi-cart-x-fill::before { content: "\f240"; }[m
+[32m+[m[32m.bi-cart-x::before { content: "\f241"; }[m
+[32m+[m[32m.bi-cart::before { content: "\f242"; }[m
+[32m+[m[32m.bi-cart2::before { content: "\f243"; }[m
+[32m+[m[32m.bi-cart3::before { content: "\f244"; }[m
+[32m+[m[32m.bi-cart4::before { content: "\f245"; }[m
+[32m+[m[32m.bi-cash-stack::before { content: "\f246"; }[m
+[32m+[m[32m.bi-cash::before { content: "\f247"; }[m
+[32m+[m[32m.bi-cast::before { content: "\f248"; }[m
+[32m+[m[32m.bi-chat-dots-fill::before { content: "\f249"; }[m
+[32m+[m[32m.bi-chat-dots::before { content: "\f24a"; }[m
+[32m+[m[32m.bi-chat-fill::before { content: "\f24b"; }[m
+[32m+[m[32m.bi-chat-left-dots-fill::before { content: "\f24c"; }[m
+[32m+[m[32m.bi-chat-left-dots::before { content: "\f24d"; }[m
+[32m+[m[32m.bi-chat-left-fill::before { content: "\f24e"; }[m
+[32m+[m[32m.bi-chat-left-quote-fill::before { content: "\f24f"; }[m
+[32m+[m[32m.bi-chat-left-quote::before { content: "\f250"; }[m
+[32m+[m[32m.bi-chat-left-text-fill::before { content: "\f251"; }[m
+[32m+[m[32m.bi-chat-left-text::before { content: "\f252"; }[m
+[32m+[m[32m.bi-chat-left::before { content: "\f253"; }[m
+[32m+[m[32m.bi-chat-quote-fill::before { content: "\f254"; }[m
+[32m+[m[32m.bi-chat-quote::before { content: "\f255"; }[m
+[32m+[m[32m.bi-chat-right-dots-fill::before { content: "\f256"; }[m
+[32m+[m[32m.bi-chat-right-dots::before { content: "\f257"; }[m
+[32m+[m[32m.bi-chat-right-fill::before { content: "\f258"; }[m
+[32m+[m[32m.bi-chat-right-quote-fill::before { content: "\f259"; }[m
+[32m+[m[32m.bi-chat-right-quote::before { content: "\f25a"; }[m
+[32m+[m[32m.bi-chat-right-text-fill::before { content: "\f25b"; }[m
+[32m+[m[32m.bi-chat-right-text::before { content: "\f25c"; }[m
+[32m+[m[32m.bi-chat-right::before { content: "\f25d"; }[m
+[32m+[m[32m.bi-chat-square-dots-fill::before { content: "\f25e"; }[m
+[32m+[m[32m.bi-chat-square-dots::before { content: "\f25f"; }[m
+[32m+[m[32m.bi-chat-square-fill::before { content: "\f260"; }[m
+[32m+[m[32m.bi-chat-square-quote-fill::before { content: "\f261"; }[m
+[32m+[m[32m.bi-chat-square-quote::before { content: "\f262"; }[m
+[32m+[m[32m.bi-chat-square-text-fill::before { content: "\f263"; }[m
+[32m+[m[32m.bi-chat-square-text::before { content: "\f264"; }[m
+[32m+[m[32m.bi-chat-square::before { content: "\f265"; }[m
+[32m+[m[32m.bi-chat-text-fill::before { content: "\f266"; }[m
+[32m+[m[32m.bi-chat-text::before { content: "\f267"; }[m
+[32m+[m[32m.bi-chat::before { content: "\f268"; }[m
+[32m+[m[32m.bi-check-all::before { content: "\f269"; }[m
+[32m+[m[32m.bi-check-circle-fill::before { content: "\f26a"; }[m
+[32m+[m[32m.bi-check-circle::before { content: "\f26b"; }[m
+[32m+[m[32m.bi-check-square-fill::before { content: "\f26c"; }[m
+[32m+[m[32m.bi-check-square::before { content: "\f26d"; }[m
+[32m+[m[32m.bi-check::before { content: "\f26e"; }[m
+[32m+[m[32m.bi-check2-all::before { content: "\f26f"; }[m
+[32m+[m[32m.bi-check2-circle::before { content: "\f270"; }[m
+[32m+[m[32m.bi-check2-square::before { content: "\f271"; }[m
+[32m+[m[32m.bi-check2::before { content: "\f272"; }[m
+[32m+[m[32m.bi-chevron-bar-contract::before { content: "\f273"; }[m
+[32m+[m[32m.bi-chevron-bar-down::before { content: "\f274"; }[m
+[32m+[m[32m.bi-chevron-bar-expand::before { content: "\f275"; }[m
+[32m+[m[32m.bi-chevron-bar-left::before { content: "\f276"; }[m
+[32m+[m[32m.bi-chevron-bar-right::before { content: "\f277"; }[m
+[32m+[m[32m.bi-chevron-bar-up::before { content: "\f278"; }[m
+[32m+[m[32m.bi-chevron-compact-down::before { content: "\f279"; }[m
+[32m+[m[32m.bi-chevron-compact-left::before { content: "\f27a"; }[m
+[32m+[m[32m.bi-chevron-compact-right::before { content: "\f27b"; }[m
+[32m+[m[32m.bi-chevron-compact-up::before { content: "\f27c"; }[m
+[32m+[m[32m.bi-chevron-contract::before { content: "\f27d"; }[m
+[32m+[m[32m.bi-chevron-double-down::before { content: "\f27e"; }[m
+[32m+[m[32m.bi-chevron-double-left::before { content: "\f27f"; }[m
+[32m+[m[32m.bi-chevron-double-right::before { content: "\f280"; }[m
+[32m+[m[32m.bi-chevron-double-up::before { content: "\f281"; }[m
+[32m+[m[32m.bi-chevron-down::before { content: "\f282"; }[m
+[32m+[m[32m.bi-chevron-expand::before { content: "\f283"; }[m
+[32m+[m[32m.bi-chevron-left::before { content: "\f284"; }[m
+[32m+[m[32m.bi-chevron-right::before { content: "\f285"; }[m
+[32m+[m[32m.bi-chevron-up::before { content: "\f286"; }[m
+[32m+[m[32m.bi-circle-fill::before { content: "\f287"; }[m
+[32m+[m[32m.bi-circle-half::before { content: "\f288"; }[m
+[32m+[m[32m.bi-circle-square::before { content: "\f289"; }[m
+[32m+[m[32m.bi-circle::before { content: "\f28a"; }[m
+[32m+[m[32m.bi-clipboard-check::before { content: "\f28b"; }[m
+[32m+[m[32m.bi-clipboard-data::before { content: "\f28c"; }[m
+[32m+[m[32m.bi-clipboard-minus::before { content: "\f28d"; }[m
+[32m+[m[32m.bi-clipboard-plus::before { content: "\f28e"; }[m
+[32m+[m[32m.bi-clipboard-x::before { content: "\f28f"; }[m
+[32m+[m[32m.bi-clipboard::before { content: "\f290"; }[m
+[32m+[m[32m.bi-clock-fill::before { content: "\f291"; }[m
+[32m+[m[32m.bi-clock-history::before { content: "\f292"; }[m
+[32m+[m[32m.bi-clock::before { content: "\f293"; }[m
+[32m+[m[32m.bi-cloud-arrow-down-fill::before { content: "\f294"; }[m
+[32m+[m[32m.bi-cloud-arrow-down::before { content: "\f295"; }[m
+[32m+[m[32m.bi-cloud-arrow-up-fill::before { content: "\f296"; }[m
+[32m+[m[32m.bi-cloud-arrow-up::before { content: "\f297"; }[m
+[32m+[m[32m.bi-cloud-check-fill::before { content: "\f298"; }[m
+[32m+[m[32m.bi-cloud-check::before { content: "\f299"; }[m
+[32m+[m[32m.bi-cloud-download-fill::before { content: "\f29a"; }[m
+[32m+[m[32m.bi-cloud-download::before { content: "\f29b"; }[m
+[32m+[m[32m.bi-cloud-drizzle-fill::before { content: "\f29c"; }[m
+[32m+[m[32m.bi-cloud-drizzle::before { content: "\f29d"; }[m
+[32m+[m[32m.bi-cloud-fill::before { content: "\f29e"; }[m
+[32m+[m[32m.bi-cloud-fog-fill::before { content: "\f29f"; }[m
+[32m+[m[32m.bi-cloud-fog::before { content: "\f2a0"; }[m
+[32m+[m[32m.bi-cloud-fog2-fill::before { content: "\f2a1"; }[m
+[32m+[m[32m.bi-cloud-fog2::before { content: "\f2a2"; }[m
+[32m+[m[32m.bi-cloud-hail-fill::before { content: "\f2a3"; }[m
+[32m+[m[32m.bi-cloud-hail::before { content: "\f2a4"; }[m
+[32m+[m[32m.bi-cloud-haze-1::before { content: "\f2a5"; }[m
+[32m+[m[32m.bi-cloud-haze-fill::before { content: "\f2a6"; }[m
+[32m+[m[32m.bi-cloud-haze::before { content: "\f2a7"; }[m
+[32m+[m[32m.bi-cloud-haze2-fill::before { content: "\f2a8"; }[m
+[32m+[m[32m.bi-cloud-lightning-fill::before { content: "\f2a9"; }[m
+[32m+[m[32m.bi-cloud-lightning-rain-fill::before { content: "\f2aa"; }[m
+[32m+[m[32m.bi-cloud-lightning-rain::before { content: "\f2ab"; }[m
+[32m+[m[32m.bi-cloud-lightning::before { content: "\f2ac"; }[m
+[32m+[m[32m.bi-cloud-minus-fill::before { content: "\f2ad"; }[m
+[32m+[m[32m.bi-cloud-minus::before { content: "\f2ae"; }[m
+[32m+[m[32m.bi-cloud-moon-fill::before { content: "\f2af"; }[m
+[32m+[m[32m.bi-cloud-moon::before { content: "\f2b0"; }[m
+[32m+[m[32m.bi-cloud-plus-fill::before { content: "\f2b1"; }[m
+[32m+[m[32m.bi-cloud-plus::before { content: "\f2b2"; }[m
+[32m+[m[32m.bi-cloud-rain-fill::before { content: "\f2b3"; }[m
+[32m+[m[32m.bi-cloud-rain-heavy-fill::before { content: "\f2b4"; }[m
+[32m+[m[32m.bi-cloud-rain-heavy::before { content: "\f2b5"; }[m
+[32m+[m[32m.bi-cloud-rain::before { content: "\f2b6"; }[m
+[32m+[m[32m.bi-cloud-slash-fill::before { content: "\f2b7"; }[m
+[32m+[m[32m.bi-cloud-slash::before { content: "\f2b8"; }[m
+[32m+[m[32m.bi-cloud-sleet-fill::before { content: "\f2b9"; }[m
+[32m+[m[32m.bi-cloud-sleet::before { content: "\f2ba"; }[m
+[32m+[m[32m.bi-cloud-snow-fill::before { content: "\f2bb"; }[m
+[32m+[m[32m.bi-cloud-snow::before { content: "\f2bc"; }[m
+[32m+[m[32m.bi-cloud-sun-fill::before { content: "\f2bd"; }[m
+[32m+[m[32m.bi-cloud-sun::before { content: "\f2be"; }[m
+[32m+[m[32m.bi-cloud-upload-fill::before { content: "\f2bf"; }[m
+[32m+[m[32m.bi-cloud-upload::before { content: "\f2c0"; }[m
+[32m+[m[32m.bi-cloud::before { content: "\f2c1"; }[m
+[32m+[m[32m.bi-clouds-fill::before { content: "\f2c2"; }[m
+[32m+[m[32m.bi-clouds::before { content: "\f2c3"; }[m
+[32m+[m[32m.bi-cloudy-fill::before { content: "\f2c4"; }[m
+[32m+[m[32m.bi-cloudy::before { content: "\f2c5"; }[m
+[32m+[m[32m.bi-code-slash::before { content: "\f2c6"; }[m
+[32m+[m[32m.bi-code-square::before { content: "\f2c7"; }[m
+[32m+[m[32m.bi-code::before { content: "\f2c8"; }[m
+[32m+[m[32m.bi-collection-fill::before { content: "\f2c9"; }[m
+[32m+[m[32m.bi-collection-play-fill::before { content: "\f2ca"; }[m
+[32m+[m[32m.bi-collection-play::before { content: "\f2cb"; }[m
+[32m+[m[32m.bi-collection::before { content: "\f2cc"; }[m
+[32m+[m[32m.bi-columns-gap::before { content: "\f2cd"; }[m
+[32m+[m[32m.bi-columns::before { content: "\f2ce"; }[m
+[32m+[m[32m.bi-command::before { content: "\f2cf"; }[m
+[32m+[m[32m.bi-compass-fill::before { content: "\f2d0"; }[m
+[32m+[m[32m.bi-compass::before { content: "\f2d1"; }[m
+[32m+[m[32m.bi-cone-striped::before { content: "\f2d2"; }[m
+[32m+[m[32m.bi-cone::before { content: "\f2d3"; }[m
+[32m+[m[32m.bi-controller::before { content: "\f2d4"; }[m
+[32m+[m[32m.bi-cpu-fill::before { content: "\f2d5"; }[m
+[32m+[m[32m.bi-cpu::before { content: "\f2d6"; }[m
+[32m+[m[32m.bi-credit-card-2-back-fill::before { content: "\f2d7"; }[m
+[32m+[m[32m.bi-credit-card-2-back::before { content: "\f2d8"; }[m
+[32m+[m[32m.bi-credit-card-2-front-fill::before { content: "\f2d9"; }[m
+[32m+[m[32m.bi-credit-card-2-front::before { content: "\f2da"; }[m
+[32m+[m[32m.bi-credit-card-fill::before { content: "\f2db"; }[m
+[32m+[m[32m.bi-credit-card::before { content: "\f2dc"; }[m
+[32m+[m[32m.bi-crop::before { content: "\f2dd"; }[m
+[32m+[m[32m.bi-cup-fill::before { content: "\f2de"; }[m
+[32m+[m[32m.bi-cup-straw::before { content: "\f2df"; }[m
+[32m+[m[32m.bi-cup::before { content: "\f2e0"; }[m
+[32m+[m[32m.bi-cursor-fill::before { content: "\f2e1"; }[m
+[32m+[m[32m.bi-cursor-text::before { content: "\f2e2"; }[m
+[32m+[m[32m.bi-cursor::before { content: "\f2e3"; }[m
+[32m+[m[32m.bi-dash-circle-dotted::before { content: "\f2e4"; }[m
+[32m+[m[32m.bi-dash-circle-fill::before { content: "\f2e5"; }[m
+[32m+[m[32m.bi-dash-circle::before { content: "\f2e6"; }[m
+[32m+[m[32m.bi-dash-square-dotted::before { content: "\f2e7"; }[m
+[32m+[m[32m.bi-dash-square-fill::before { content: "\f2e8"; }[m
+[32m+[m[32m.bi-dash-square::before { content: "\f2e9"; }[m
+[32m+[m[32m.bi-dash::before { content: "\f2ea"; }[m
+[32m+[m[32m.bi-diagram-2-fill::before { content: "\f2eb"; }[m
+[32m+[m[32m.bi-diagram-2::before { content: "\f2ec"; }[m
+[32m+[m[32m.bi-diagram-3-fill::before { content: "\f2ed"; }[m
+[32m+[m[32m.bi-diagram-3::before { content: "\f2ee"; }[m
+[32m+[m[32m.bi-diamond-fill::before { content: "\f2ef"; }[m
+[32m+[m[32m.bi-diamond-half::before { content: "\f2f0"; }[m
+[32m+[m[32m.bi-diamond::before { content: "\f2f1"; }[m
+[32m+[m[32m.bi-dice-1-fill::before { content: "\f2f2"; }[m
+[32m+[m[32m.bi-dice-1::before { content: "\f2f3"; }[m
+[32m+[m[32m.bi-dice-2-fill::before { content: "\f2f4"; }[m
+[32m+[m[32m.bi-dice-2::before { content: "\f2f5"; }[m
+[32m+[m[32m.bi-dice-3-fill::before { content: "\f2f6"; }[m
+[32m+[m[32m.bi-dice-3::before { content: "\f2f7"; }[m
+[32m+[m[32m.bi-dice-4-fill::before { content: "\f2f8"; }[m
+[32m+[m[32m.bi-dice-4::before { content: "\f2f9"; }[m
+[32m+[m[32m.bi-dice-5-fill::before { content: "\f2fa"; }[m
+[32m+[m[32m.bi-dice-5::before { content: "\f2fb"; }[m
+[32m+[m[32m.bi-dice-6-fill::before { content: "\f2fc"; }[m
+[32m+[m[32m.bi-dice-6::before { content: "\f2fd"; }[m
+[32m+[m[32m.bi-disc-fill::before { content: "\f2fe"; }[m
+[32m+[m[32m.bi-disc::before { content: "\f2ff"; }[m
+[32m+[m[32m.bi-discord::before { content: "\f300"; }[m
+[32m+[m[32m.bi-display-fill::before { content: "\f301"; }[m
+[32m+[m[32m.bi-display::before { content: "\f302"; }[m
+[32m+[m[32m.bi-distribute-horizontal::before { content: "\f303"; }[m
+[32m+[m[32m.bi-distribute-vertical::before { content: "\f304"; }[m
+[32m+[m[32m.bi-door-closed-fill::before { content: "\f305"; }[m
+[32m+[m[32m.bi-door-closed::before { content: "\f306"; }[m
+[32m+[m[32m.bi-door-open-fill::before { content: "\f307"; }[m
+[32m+[m[32m.bi-door-open::before { content: "\f308"; }[m
+[32m+[m[32m.bi-dot::before { content: "\f309"; }[m
+[32m+[m[32m.bi-download::before { content: "\f30a"; }[m
+[32m+[m[32m.bi-droplet-fill::before { content: "\f30b"; }[m
+[32m+[m[32m.bi-droplet-half::before { content: "\f30c"; }[m
+[32m+[m[32m.bi-droplet::before { content: "\f30d"; }[m
+[32m+[m[32m.bi-earbuds::before { content: "\f30e"; }[m
+[32m+[m[32m.bi-easel-fill::before { content: "\f30f"; }[m
+[32m+[m[32m.bi-easel::before { content: "\f310"; }[m
+[32m+[m[32m.bi-egg-fill::before { content: "\f311"; }[m
+[32m+[m[32m.bi-egg-fried::before { content: "\f312"; }[m
+[32m+[m[32m.bi-egg::before { content: "\f313"; }[m
+[32m+[m[32m.bi-eject-fill::before { content: "\f314"; }[m
+[32m+[m[32m.bi-eject::before { content: "\f315"; }[m
+[32m+[m[32m.bi-emoji-angry-fill::before { content: "\f316"; }[m
+[32m+[m[32m.bi-emoji-angry::before { content: "\f317"; }[m
+[32m+[m[32m.bi-emoji-dizzy-fill::before { content: "\f318"; }[m
+[32m+[m[32m.bi-emoji-dizzy::before { content: "\f319"; }[m
+[32m+[m[32m.bi-emoji-expressionless-fill::before { content: "\f31a"; }[m
+[32m+[m[32m.bi-emoji-expressionless::before { content: "\f31b"; }[m
+[32m+[m[32m.bi-emoji-frown-fill::before { content: "\f31c"; }[m
+[32m+[m[32m.bi-emoji-frown::before { content: "\f31d"; }[m
+[32m+[m[32m.bi-emoji-heart-eyes-fill::before { content: "\f31e"; }[m
+[32m+[m[32m.bi-emoji-heart-eyes::before { content: "\f31f"; }[m
+[32m+[m[32m.bi-emoji-laughing-fill::before { content: "\f320"; }[m
+[32m+[m[32m.bi-emoji-laughing::before { content: "\f321"; }[m
+[32m+[m[32m.bi-emoji-neutral-fill::before { content: "\f322"; }[m
+[32m+[m[32m.bi-emoji-neutral::before { content: "\f323"; }[m
+[32m+[m[32m.bi-emoji-smile-fill::before { content: "\f324"; }[m
+[32m+[m[32m.bi-emoji-smile-upside-down-fill::before { content: "\f325"; }[m
+[32m+[m[32m.bi-emoji-smile-upside-down::before { content: "\f326"; }[m
+[32m+[m[32m.bi-emoji-smile::before { content: "\f327"; }[m
+[32m+[m[32m.bi-emoji-sunglasses-fill::before { content: "\f328"; }[m
+[32m+[m[32m.bi-emoji-sunglasses::before { content: "\f329"; }[m
+[32m+[m[32m.bi-emoji-wink-fill::before { content: "\f32a"; }[m
+[32m+[m[32m.bi-emoji-wink::before { content: "\f32b"; }[m
+[32m+[m[32m.bi-envelope-fill::before { content: "\f32c"; }[m
+[32m+[m[32m.bi-envelope-open-fill::before { content: "\f32d"; }[m
+[32m+[m[32m.bi-envelope-open::before { content: "\f32e"; }[m
+[32m+[m[32m.bi-envelope::before { content: "\f32f"; }[m
+[32m+[m[32m.bi-eraser-fill::before { content: "\f330"; }[m
+[32m+[m[32m.bi-eraser::before { content: "\f331"; }[m
+[32m+[m[32m.bi-exclamation-circle-fill::before { content: "\f332"; }[m
+[32m+[m[32m.bi-exclamation-circle::before { content: "\f333"; }[m
+[32m+[m[32m.bi-exclamation-diamond-fill::before { content: "\f334"; }[m
+[32m+[m[32m.bi-exclamation-diamond::before { content: "\f335"; }[m
+[32m+[m[32m.bi-exclamation-octagon-fill::before { content: "\f336"; }[m
+[32m+[m[32m.bi-exclamation-octagon::before { content: "\f337"; }[m
+[32m+[m[32m.bi-exclamation-square-fill::before { content: "\f338"; }[m
+[32m+[m[32m.bi-exclamation-square::before { content: "\f339"; }[m
+[32m+[m[32m.bi-exclamation-triangle-fill::before { content: "\f33a"; }[m
+[32m+[m[32m.bi-exclamation-triangle::before { content: "\f33b"; }[m
+[32m+[m[32m.bi-exclamation::before { content: "\f33c"; }[m
+[32m+[m[32m.bi-exclude::before { content: "\f33d"; }[m
+[32m+[m[32m.bi-eye-fill::before { content: "\f33e"; }[m
+[32m+[m[32m.bi-eye-slash-fill::before { content: "\f33f"; }[m
+[32m+[m[32m.bi-eye-slash::before { content: "\f340"; }[m
+[32m+[m[32m.bi-eye::before { content: "\f341"; }[m
+[32m+[m[32m.bi-eyedropper::before { content: "\f342"; }[m
+[32m+[m[32m.bi-eyeglasses::before { content: "\f343"; }[m
+[32m+[m[32m.bi-facebook::before { content: "\f344"; }[m
+[32m+[m[32m.bi-file-arrow-down-fill::before { content: "\f345"; }[m
+[32m+[m[32m.bi-file-arrow-down::before { content: "\f346"; }[m
+[32m+[m[32m.bi-file-arrow-up-fill::before { content: "\f347"; }[m
+[32m+[m[32m.bi-file-arrow-up::before { content: "\f348"; }[m
+[32m+[m[32m.bi-file-bar-graph-fill::before { content: "\f349"; }[m
+[32m+[m[32m.bi-file-bar-graph::before { content: "\f34a"; }[m
+[32m+[m[32m.bi-file-binary-fill::before { content: "\f34b"; }[m
+[32m+[m[32m.bi-file-binary::before { content: "\f34c"; }[m
+[32m+[m[32m.bi-file-break-fill::before { content: "\f34d"; }[m
+[32m+[m[32m.bi-file-break::before { content: "\f34e"; }[m
+[32m+[m[32m.bi-file-check-fill::before { content: "\f34f"; }[m
+[32m+[m[32m.bi-file-check::before { content: "\f350"; }[m
+[32m+[m[32m.bi-file-code-fill::before { content: "\f351"; }[m
+[32m+[m[32m.bi-file-code::before { content: "\f352"; }[m
+[32m+[m[32m.bi-file-diff-fill::before { content: "\f353"; }[m
+[32m+[m[32m.bi-file-diff::before { content: "\f354"; }[m
+[32m+[m[32m.bi-file-earmark-arrow-down-fill::before { content: "\f355"; }[m
+[32m+[m[32m.bi-file-earmark-arrow-down::before { content: "\f356"; }[m
+[32m+[m[32m.bi-file-earmark-arrow-up-fill::before { content: "\f357"; }[m
+[32m+[m[32m.bi-file-earmark-arrow-up::before { content: "\f358"; }[m
+[32m+[m[32m.bi-file-earmark-bar-graph-fill::before { content: "\f359"; }[m
+[32m+[m[32m.bi-file-earmark-bar-graph::before { content: "\f35a"; }[m
+[32m+[m[32m.bi-file-earmark-binary-fill::before { content: "\f35b"; }[m
+[32m+[m[32m.bi-file-earmark-binary::before { content: "\f35c"; }[m
+[32m+[m[32m.bi-file-earmark-break-fill::before { content: "\f35d"; }[m
+[32m+[m[32m.bi-file-earmark-break::before { content: "\f35e"; }[m
+[32m+[m[32m.bi-file-earmark-check-fill::before { content: "\f35f"; }[m
+[32m+[m[32m.bi-file-earmark-check::before { content: "\f360"; }[m
+[32m+[m[32m.bi-file-earmark-code-fill::before { content: "\f361"; }[m
+[32m+[m[32m.bi-file-earmark-code::before { content: "\f362"; }[m
+[32m+[m[32m.bi-file-earmark-diff-fill::before { content: "\f363"; }[m
+[32m+[m[32m.bi-file-earmark-diff::before { content: "\f364"; }[m
+[32m+[m[32m.bi-file-earmark-easel-fill::before { content: "\f365"; }[m
+[32m+[m[32m.bi-file-earmark-easel::before { content: "\f366"; }[m
+[32m+[m[32m.bi-file-earmark-excel-fill::before { content: "\f367"; }[m
+[32m+[m[32m.bi-file-earmark-excel::before { content: "\f368"; }[m
+[32m+[m[32m.bi-file-earmark-fill::before { content: "\f369"; }[m
+[32m+[m[32m.bi-file-earmark-font-fill::before { content: "\f36a"; }[m
+[32m+[m[32m.bi-file-earmark-font::before { content: "\f36b"; }[m
+[32m+[m[32m.bi-file-earmark-image-fill::before { content: "\f36c"; }[m
+[32m+[m[32m.bi-file-earmark-image::before { content: "\f36d"; }[m
+[32m+[m[32m.bi-file-earmark-lock-fill::before { content: "\f36e"; }[m
+[32m+[m[32m.bi-file-earmark-lock::before { content: "\f36f"; }[m
+[32m+[m[32m.bi-file-earmark-lock2-fill::before { content: "\f370"; }[m
+[32m+[m[32m.bi-file-earmark-lock2::before { content: "\f371"; }[m
+[32m+[m[32m.bi-file-earmark-medical-fill::before { content: "\f372"; }[m
+[32m+[m[32m.bi-file-earmark-medical::before { content: "\f373"; }[m
+[32m+[m[32m.bi-file-earmark-minus-fill::before { content: "\f374"; }[m
+[32m+[m[32m.bi-file-earmark-minus::before { content: "\f375"; }[m
+[32m+[m[32m.bi-file-earmark-music-fill::before { content: "\f376"; }[m
+[32m+[m[32m.bi-file-earmark-music::before { content: "\f377"; }[m
+[32m+[m[32m.bi-file-earmark-person-fill::before { content: "\f378"; }[m
+[32m+[m[32m.bi-file-earmark-person::before { content: "\f379"; }[m
+[32m+[m[32m.bi-file-earmark-play-fill::before { content: "\f37a"; }[m
+[32m+[m[32m.bi-file-earmark-play::before { content: "\f37b"; }[m
+[32m+[m[32m.bi-file-earmark-plus-fill::before { content: "\f37c"; }[m
+[32m+[m[32m.bi-file-earmark-plus::before { content: "\f37d"; }[m
+[32m+[m[32m.bi-file-earmark-post-fill::before { content: "\f37e"; }[m
+[32m+[m[32m.bi-file-earmark-post::before { content: "\f37f"; }[m
+[32m+[m[32m.bi-file-earmark-ppt-fill::before { content: "\f380"; }[m
+[32m+[m[32m.bi-file-earmark-ppt::before { content: "\f381"; }[m
+[32m+[m[32m.bi-file-earmark-richtext-fill::before { content: "\f382"; }[m
+[32m+[m[32m.bi-file-earmark-richtext::before { content: "\f383"; }[m
+[32m+[m[32m.bi-file-earmark-ruled-fill::before { content: "\f384"; }[m
+[32m+[m[32m.bi-file-earmark-ruled::before { content: "\f385"; }[m
+[32m+[m[32m.bi-file-earmark-slides-fill::before { content: "\f386"; }[m
+[32m+[m[32m.bi-file-earmark-slides::before { content: "\f387"; }[m
+[32m+[m[32m.bi-file-earmark-spreadsheet-fill::before { content: "\f388"; }[m
+[32m+[m[32m.bi-file-earmark-spreadsheet::before { content: "\f389"; }[m
+[32m+[m[32m.bi-file-earmark-text-fill::before { content: "\f38a"; }[m
+[32m+[m[32m.bi-file-earmark-text::before { content: "\f38b"; }[m
+[32m+[m[32m.bi-file-earmark-word-fill::before { content: "\f38c"; }[m
+[32m+[m[32m.bi-file-earmark-word::before { content: "\f38d"; }[m
+[32m+[m[32m.bi-file-earmark-x-fill::before { content: "\f38e"; }[m
+[32m+[m[32m.bi-file-earmark-x::before { content: "\f38f"; }[m
+[32m+[m[32m.bi-file-earmark-zip-fill::before { content: "\f390"; }[m
+[32m+[m[32m.bi-file-earmark-zip::before { content: "\f391"; }[m
+[32m+[m[32m.bi-file-earmark::before { content: "\f392"; }[m
+[32m+[m[32m.bi-file-easel-fill::before { content: "\f393"; }[m
+[32m+[m[32m.bi-file-easel::before { content: "\f394"; }[m
+[32m+[m[32m.bi-file-excel-fill::before { content: "\f395"; }[m
+[32m+[m[32m.bi-file-excel::before { content: "\f396"; }[m
+[32m+[m[32m.bi-file-fill::before { content: "\f397"; }[m
+[32m+[m[32m.bi-file-font-fill::before { content: "\f398"; }[m
+[32m+[m[32m.bi-file-font::before { content: "\f399"; }[m
+[32m+[m[32m.bi-file-image-fill::before { content: "\f39a"; }[m
+[32m+[m[32m.bi-file-image::before { content: "\f39b"; }[m
+[32m+[m[32m.bi-file-lock-fill::before { content: "\f39c"; }[m
+[32m+[m[32m.bi-file-lock::before { content: "\f39d"; }[m
+[32m+[m[32m.bi-file-lock2-fill::before { content: "\f39e"; }[m
+[32m+[m[32m.bi-file-lock2::before { content: "\f39f"; }[m
+[32m+[m[32m.bi-file-medical-fill::before { content: "\f3a0"; }[m
+[32m+[m[32m.bi-file-medical::before { content: "\f3a1"; }[m
+[32m+[m[32m.bi-file-minus-fill::before { content: "\f3a2"; }[m
+[32m+[m[32m.bi-file-minus::before { content: "\f3a3"; }[m
+[32m+[m[32m.bi-file-music-fill::before { content: "\f3a4"; }[m
+[32m+[m[32m.bi-file-music::before { content: "\f3a5"; }[m
+[32m+[m[32m.bi-file-person-fill::before { content: "\f3a6"; }[m
+[32m+[m[32m.bi-file-person::before { content: "\f3a7"; }[m
+[32m+[m[32m.bi-file-play-fill::before { content: "\f3a8"; }[m
+[32m+[m[32m.bi-file-play::before { content: "\f3a9"; }[m
+[32m+[m[32m.bi-file-plus-fill::before { content: "\f3aa"; }[m
+[32m+[m[32m.bi-file-plus::before { content: "\f3ab"; }[m
+[32m+[m[32m.bi-file-post-fill::before { content: "\f3ac"; }[m
+[32m+[m[32m.bi-file-post::before { content: "\f3ad"; }[m
+[32m+[m[32m.bi-file-ppt-fill::before { content: "\f3ae"; }[m
+[32m+[m[32m.bi-file-ppt::before { content: "\f3af"; }[m
+[32m+[m[32m.bi-file-richtext-fill::before { content: "\f3b0"; }[m
+[32m+[m[32m.bi-file-richtext::before { content: "\f3b1"; }[m
+[32m+[m[32m.bi-file-ruled-fill::before { content: "\f3b2"; }[m
+[32m+[m[32m.bi-file-ruled::before { content: "\f3b3"; }[m
+[32m+[m[32m.bi-file-slides-fill::before { content: "\f3b4"; }[m
+[32m+[m[32m.bi-file-slides::before { content: "\f3b5"; }[m
+[32m+[m[32m.bi-file-spreadsheet-fill::before { content: "\f3b6"; }[m
+[32m+[m[32m.bi-file-spreadsheet::before { content: "\f3b7"; }[m
+[32m+[m[32m.bi-file-text-fill::before { content: "\f3b8"; }[m
+[32m+[m[32m.bi-file-text::before { content: "\f3b9"; }[m
+[32m+[m[32m.bi-file-word-fill::before { content: "\f3ba"; }[m
+[32m+[m[32m.bi-file-word::before { content: "\f3bb"; }[m
+[32m+[m[32m.bi-file-x-fill::before { content: "\f3bc"; }[m
+[32m+[m[32m.bi-file-x::before { content: "\f3bd"; }[m
+[32m+[m[32m.bi-file-zip-fill::before { content: "\f3be"; }[m
+[32m+[m[32m.bi-file-zip::before { content: "\f3bf"; }[m
+[32m+[m[32m.bi-file::before { content: "\f3c0"; }[m
+[32m+[m[32m.bi-files-alt::before { content: "\f3c1"; }[m
+[32m+[m[32m.bi-files::before { content: "\f3c2"; }[m
+[32m+[m[32m.bi-film::before { content: "\f3c3"; }[m
+[32m+[m[32m.bi-filter-circle-fill::before { content: "\f3c4"; }[m
+[32m+[m[32m.bi-filter-circle::before { content: "\f3c5"; }[m
+[32m+[m[32m.bi-filter-left::before { content: "\f3c6"; }[m
+[32m+[m[32m.bi-filter-right::before { content: "\f3c7"; }[m
+[32m+[m[32m.bi-filter-square-fill::before { content: "\f3c8"; }[m
+[32m+[m[32m.bi-filter-square::before { content: "\f3c9"; }[m
+[32m+[m[32m.bi-filter::before { content: "\f3ca"; }[m
+[32m+[m[32m.bi-flag-fill::before { content: "\f3cb"; }[m
+[32m+[m[32m.bi-flag::before { content: "\f3cc"; }[m
+[32m+[m[32m.bi-flower1::before { content: "\f3cd"; }[m
+[32m+[m[32m.bi-flower2::before { content: "\f3ce"; }[m
+[32m+[m[32m.bi-flower3::before { content: "\f3cf"; }[m
+[32m+[m[32m.bi-folder-check::before { content: "\f3d0"; }[m
+[32m+[m[32m.bi-folder-fill::before { content: "\f3d1"; }[m
+[32m+[m[32m.bi-folder-minus::before { content: "\f3d2"; }[m
+[32m+[m[32m.bi-folder-plus::before { content: "\f3d3"; }[m
+[32m+[m[32m.bi-folder-symlink-fill::before { content: "\f3d4"; }[m
+[32m+[m[32m.bi-folder-symlink::before { content: "\f3d5"; }[m
+[32m+[m[32m.bi-folder-x::before { content: "\f3d6"; }[m
+[32m+[m[32m.bi-folder::before { content: "\f3d7"; }[m
+[32m+[m[32m.bi-folder2-open::before { content: "\f3d8"; }[m
+[32m+[m[32m.bi-folder2::before { content: "\f3d9"; }[m
+[32m+[m[32m.bi-fonts::before { content: "\f3da"; }[m
+[32m+[m[32m.bi-forward-fill::before { content: "\f3db"; }[m
+[32m+[m[32m.bi-forward::before { content: "\f3dc"; }[m
+[32m+[m[32m.bi-front::before { content: "\f3dd"; }[m
+[32m+[m[32m.bi-fullscreen-exit::before { content: "\f3de"; }[m
+[32m+[m[32m.bi-fullscreen::before { content: "\f3df"; }[m
+[32m+[m[32m.bi-funnel-fill::before { content: "\f3e0"; }[m
+[32m+[m[32m.bi-funnel::before { content: "\f3e1"; }[m
+[32m+[m[32m.bi-gear-fill::before { content: "\f3e2"; }[m
+[32m+[m[32m.bi-gear-wide-connected::before { content: "\f3e3"; }[m
+[32m+[m[32m.bi-gear-wide::before { content: "\f3e4"; }[m
+[32m+[m[32m.bi-gear::before { content: "\f3e5"; }[m
+[32m+[m[32m.bi-gem::before { content: "\f3e6"; }[m
+[32m+[m[32m.bi-geo-alt-fill::before { content: "\f3e7"; }[m
+[32m+[m[32m.bi-geo-alt::before { content: "\f3e8"; }[m
+[32m+[m[32m.bi-geo-fill::before { content: "\f3e9"; }[m
+[32m+[m[32m.bi-geo::before { content: "\f3ea"; }[m
+[32m+[m[32m.bi-gift-fill::before { content: "\f3eb"; }[m
+[32m+[m[32m.bi-gift::before { content: "\f3ec"; }[m
+[32m+[m[32m.bi-github::before { content: "\f3ed"; }[m
+[32m+[m[32m.bi-globe::before { content: "\f3ee"; }[m
+[32m+[m[32m.bi-globe2::before { content: "\f3ef"; }[m
+[32m+[m[32m.bi-google::before { content: "\f3f0"; }[m
+[32m+[m[32m.bi-graph-down::before { content: "\f3f1"; }[m
+[32m+[m[32m.bi-graph-up::before { content: "\f3f2"; }[m
+[32m+[m[32m.bi-grid-1x2-fill::before { content: "\f3f3"; }[m
+[32m+[m[32m.bi-grid-1x2::before { content: "\f3f4"; }[m
+[32m+[m[32m.bi-grid-3x2-gap-fill::before { content: "\f3f5"; }[m
+[32m+[m[32m.bi-grid-3x2-gap::before { content: "\f3f6"; }[m
+[32m+[m[32m.bi-grid-3x2::before { content: "\f3f7"; }[m
+[32m+[m[32m.bi-grid-3x3-gap-fill::before { content: "\f3f8"; }[m
+[32m+[m[32m.bi-grid-3x3-gap::before { content: "\f3f9"; }[m
+[32m+[m[32m.bi-grid-3x3::before { content: "\f3fa"; }[m
+[32m+[m[32m.bi-grid-fill::before { content: "\f3fb"; }[m
+[32m+[m[32m.bi-grid::before { content: "\f3fc"; }[m
+[32m+[m[32m.bi-grip-horizontal::before { content: "\f3fd"; }[m
+[32m+[m[32m.bi-grip-vertical::before { content: "\f3fe"; }[m
+[32m+[m[32m.bi-hammer::before { content: "\f3ff"; }[m
+[32m+[m[32m.bi-hand-index-fill::before { content: "\f400"; }[m
+[32m+[m[32m.bi-hand-index-thumb-fill::before { content: "\f401"; }[m
+[32m+[m[32m.bi-hand-index-thumb::before { content: "\f402"; }[m
+[32m+[m[32m.bi-hand-index::before { content: "\f403"; }[m
+[32m+[m[32m.bi-hand-thumbs-down-fill::before { content: "\f404"; }[m
+[32m+[m[32m.bi-hand-thumbs-down::before { content: "\f405"; }[m
+[32m+[m[32m.bi-hand-thumbs-up-fill::before { content: "\f406"; }[m
+[32m+[m[32m.bi-hand-thumbs-up::before { content: "\f407"; }[m
+[32m+[m[32m.bi-handbag-fill::before { content: "\f408"; }[m
+[32m+[m[32m.bi-handbag::before { content: "\f409"; }[m
+[32m+[m[32m.bi-hash::before { content: "\f40a"; }[m
+[32m+[m[32m.bi-hdd-fill::before { content: "\f40b"; }[m
+[32m+[m[32m.bi-hdd-network-fill::before { content: "\f40c"; }[m
+[32m+[m[32m.bi-hdd-network::before { content: "\f40d"; }[m
+[32m+[m[32m.bi-hdd-rack-fill::before { content: "\f40e"; }[m
+[32m+[m[32m.bi-hdd-rack::before { content: "\f40f"; }[m
+[32m+[m[32m.bi-hdd-stack-fill::before { content: "\f410"; }[m
+[32m+[m[32m.bi-hdd-stack::before { content: "\f411"; }[m
+[32m+[m[32m.bi-hdd::before { content: "\f412"; }[m
+[32m+[m[32m.bi-headphones::before { content: "\f413"; }[m
+[32m+[m[32m.bi-headset::before { content: "\f414"; }[m
+[32m+[m[32m.bi-heart-fill::before { content: "\f415"; }[m
+[32m+[m[32m.bi-heart-half::before { content: "\f416"; }[m
+[32m+[m[32m.bi-heart::before { content: "\f417"; }[m
+[32m+[m[32m.bi-heptagon-fill::before { content: "\f418"; }[m
+[32m+[m[32m.bi-heptagon-half::before { content: "\f419"; }[m
+[32m+[m[32m.bi-heptagon::before { content: "\f41a"; }[m
+[32m+[m[32m.bi-hexagon-fill::before { content: "\f41b"; }[m
+[32m+[m[32m.bi-hexagon-half::before { content: "\f41c"; }[m
+[32m+[m[32m.bi-hexagon::before { content: "\f41d"; }[m
+[32m+[m[32m.bi-hourglass-bottom::before { content: "\f41e"; }[m
+[32m+[m[32m.bi-hourglass-split::before { content: "\f41f"; }[m
+[32m+[m[32m.bi-hourglass-top::before { content: "\f420"; }[m
+[32m+[m[32m.bi-hourglass::before { content: "\f421"; }[m
+[32m+[m[32m.bi-house-door-fill::before { content: "\f422"; }[m
+[32m+[m[32m.bi-house-door::before { content: "\f423"; }[m
+[32m+[m[32m.bi-house-fill::before { content: "\f424"; }[m
+[32m+[m[32m.bi-house::before { content: "\f425"; }[m
+[32m+[m[32m.bi-hr::before { content: "\f426"; }[m
+[32m+[m[32m.bi-hurricane::before { content: "\f427"; }[m
+[32m+[m[32m.bi-image-alt::before { content: "\f428"; }[m
+[32m+[m[32m.bi-image-fill::before { content: "\f429"; }[m
+[32m+[m[32m.bi-image::before { content: "\f42a"; }[m
+[32m+[m[32m.bi-images::before { content: "\f42b"; }[m
+[32m+[m[32m.bi-inbox-fill::before { content: "\f42c"; }[m
+[32m+[m[32m.bi-inbox::before { content: "\f42d"; }[m
+[32m+[m[32m.bi-inboxes-fill::before { content: "\f42e"; }[m
+[32m+[m[32m.bi-inboxes::before { content: "\f42f"; }[m
+[32m+[m[32m.bi-info-circle-fill::before { content: "\f430"; }[m
+[32m+[m[32m.bi-info-circle::before { content: "\f431"; }[m
+[32m+[m[32m.bi-info-square-fill::before { content: "\f432"; }[m
+[32m+[m[32m.bi-info-square::before { content: "\f433"; }[m
+[32m+[m[32m.bi-info::before { content: "\f434"; }[m
+[32m+[m[32m.bi-input-cursor-text::before { content: "\f435"; }[m
+[32m+[m[32m.bi-input-cursor::before { content: "\f436"; }[m
+[32m+[m[32m.bi-instagram::before { content: "\f437"; }[m
+[32m+[m[32m.bi-intersect::before { content: "\f438"; }[m
+[32m+[m[32m.bi-journal-album::before { content: "\f439"; }[m
+[32m+[m[32m.bi-journal-arrow-down::before { content: "\f43a"; }[m
+[32m+[m[32m.bi-journal-arrow-up::before { content: "\f43b"; }[m
+[32m+[m[32m.bi-journal-bookmark-fill::before { content: "\f43c"; }[m
+[32m+[m[32m.bi-journal-bookmark::before { content: "\f43d"; }[m
+[32m+[m[32m.bi-journal-check::before { content: "\f43e"; }[m
+[32m+[m[32m.bi-journal-code::before { content: "\f43f"; }[m
+[32m+[m[32m.bi-journal-medical::before { content: "\f440"; }[m
+[32m+[m[32m.bi-journal-minus::before { content: "\f441"; }[m
+[32m+[m[32m.bi-journal-plus::before { content: "\f442"; }[m
+[32m+[m[32m.bi-journal-richtext::before { content: "\f443"; }[m
+[32m+[m[32m.bi-journal-text::before { content: "\f444"; }[m
+[32m+[m[32m.bi-journal-x::before { content: "\f445"; }[m
+[32m+[m[32m.bi-journal::before { content: "\f446"; }[m
+[32m+[m[32m.bi-journals::before { content: "\f447"; }[m
+[32m+[m[32m.bi-joystick::before { content: "\f448"; }[m
+[32m+[m[32m.bi-justify-left::before { content: "\f449"; }[m
+[32m+[m[32m.bi-justify-right::before { content: "\f44a"; }[m
+[32m+[m[32m.bi-justify::before { content: "\f44b"; }[m
+[32m+[m[32m.bi-kanban-fill::before { content: "\f44c"; }[m
+[32m+[m[32m.bi-kanban::before { content: "\f44d"; }[m
+[32m+[m[32m.bi-key-fill::before { content: "\f44e"; }[m
+[32m+[m[32m.bi-key::before { content: "\f44f"; }[m
+[32m+[m[32m.bi-keyboard-fill::before { content: "\f450"; }[m
+[32m+[m[32m.bi-keyboard::before { content: "\f451"; }[m
+[32m+[m[32m.bi-ladder::before { content: "\f452"; }[m
+[32m+[m[32m.bi-lamp-fill::before { content: "\f453"; }[m
+[32m+[m[32m.bi-lamp::before { content: "\f454"; }[m
+[32m+[m[32m.bi-laptop-fill::before { content: "\f455"; }[m
+[32m+[m[32m.bi-laptop::before { content: "\f456"; }[m
+[32m+[m[32m.bi-layer-backward::before { content: "\f457"; }[m
+[32m+[m[32m.bi-layer-forward::before { content: "\f458"; }[m
+[32m+[m[32m.bi-layers-fill::before { content: "\f459"; }[m
+[32m+[m[32m.bi-layers-half::before { content: "\f45a"; }[m
+[32m+[m[32m.bi-layers::before { content: "\f45b"; }[m
+[32m+[m[32m.bi-layout-sidebar-inset-reverse::before { content: "\f45c"; }[m
+[32m+[m[32m.bi-layout-sidebar-inset::before { content: "\f45d"; }[m
+[32m+[m[32m.bi-layout-sidebar-reverse::before { content: "\f45e"; }[m
+[32m+[m[32m.bi-layout-sidebar::before { content: "\f45f"; }[m
+[32m+[m[32m.bi-layout-split::before { content: "\f460"; }[m
+[32m+[m[32m.bi-layout-text-sidebar-reverse::before { content: "\f461"; }[m
+[32m+[m[32m.bi-layout-text-sidebar::before { content: "\f462"; }[m
+[32m+[m[32m.bi-layout-text-window-reverse::before { content: "\f463"; }[m
+[32m+[m[32m.bi-layout-text-window::before { content: "\f464"; }[m
+[32m+[m[32m.bi-layout-three-columns::before { content: "\f465"; }[m
+[32m+[m[32m.bi-layout-wtf::before { content: "\f466"; }[m
+[32m+[m[32m.bi-life-preserver::before { content: "\f467"; }[m
+[32m+[m[32m.bi-lightbulb-fill::before { content: "\f468"; }[m
+[32m+[m[32m.bi-lightbulb-off-fill::before { content: "\f469"; }[m
+[32m+[m[32m.bi-lightbulb-off::before { content: "\f46a"; }[m
+[32m+[m[32m.bi-lightbulb::before { content: "\f46b"; }[m
+[32m+[m[32m.bi-lightning-charge-fill::before { content: "\f46c"; }[m
+[32m+[m[32m.bi-lightning-charge::before { content: "\f46d"; }[m
+[32m+[m[32m.bi-lightning-fill::before { content: "\f46e"; }[m
+[32m+[m[32m.bi-lightning::before { content: "\f46f"; }[m
+[32m+[m[32m.bi-link-45deg::before { content: "\f470"; }[m
+[32m+[m[32m.bi-link::before { content: "\f471"; }[m
+[32m+[m[32m.bi-linkedin::before { content: "\f472"; }[m
+[32m+[m[32m.bi-list-check::before { content: "\f473"; }[m
+[32m+[m[32m.bi-list-nested::before { content: "\f474"; }[m
+[32m+[m[32m.bi-list-ol::before { content: "\f475"; }[m
+[32m+[m[32m.bi-list-stars::before { content: "\f476"; }[m
+[32m+[m[32m.bi-list-task::before { content: "\f477"; }[m
+[32m+[m[32m.bi-list-ul::before { content: "\f478"; }[m
+[32m+[m[32m.bi-list::before { content: "\f479"; }[m
+[32m+[m[32m.bi-lock-fill::before { content: "\f47a"; }[m
+[32m+[m[32m.bi-lock::before { content: "\f47b"; }[m
+[32m+[m[32m.bi-mailbox::before { content: "\f47c"; }[m
+[32m+[m[32m.bi-mailbox2::before { content: "\f47d"; }[m
+[32m+[m[32m.bi-map-fill::before { content: "\f47e"; }[m
+[32m+[m[32m.bi-map::before { content: "\f47f"; }[m
+[32m+[m[32m.bi-markdown-fill::before { content: "\f480"; }[m
+[32m+[m[32m.bi-markdown::before { content: "\f481"; }[m
+[32m+[m[32m.bi-mask::before { content: "\f482"; }[m
+[32m+[m[32m.bi-megaphone-fill::before { content: "\f483"; }[m
+[32m+[m[32m.bi-megaphone::before { content: "\f484"; }[m
+[32m+[m[32m.bi-menu-app-fill::before { content: "\f485"; }[m
+[32m+[m[32m.bi-menu-app::before { content: "\f486"; }[m
+[32m+[m[32m.bi-menu-button-fill::before { content: "\f487"; }[m
+[32m+[m[32m.bi-menu-button-wide-fill::before { content: "\f488"; }[m
+[32m+[m[32m.bi-menu-button-wide::before { content: "\f489"; }[m
+[32m+[m[32m.bi-menu-button::before { content: "\f48a"; }[m
+[32m+[m[32m.bi-menu-down::before { content: "\f48b"; }[m
+[32m+[m[32m.bi-menu-up::before { content: "\f48c"; }[m
+[32m+[m[32m.bi-mic-fill::before { content: "\f48d"; }[m
+[32m+[m[32m.bi-mic-mute-fill::before { content: "\f48e"; }[m
+[32m+[m[32m.bi-mic-mute::before { content: "\f48f"; }[m
+[32m+[m[32m.bi-mic::before { content: "\f490"; }[m
+[32m+[m[32m.bi-minecart-loaded::before { content: "\f491"; }[m
+[32m+[m[32m.bi-minecart::before { content: "\f492"; }[m
+[32m+[m[32m.bi-moisture::before { content: "\f493"; }[m
+[32m+[m[32m.bi-moon-fill::before { content: "\f494"; }[m
+[32m+[m[32m.bi-moon-stars-fill::before { content: "\f495"; }[m
+[32m+[m[32m.bi-moon-stars::before { content: "\f496"; }[m
+[32m+[m[32m.bi-moon::before { content: "\f497"; }[m
+[32m+[m[32m.bi-mouse-fill::before { content: "\f498"; }[m
+[32m+[m[32m.bi-mouse::before { content: "\f499"; }[m
+[32m+[m[32m.bi-mouse2-fill::before { content: "\f49a"; }[m
+[32m+[m[32m.bi-mouse2::before { content: "\f49b"; }[m
+[32m+[m[32m.bi-mouse3-fill::before { content: "\f49c"; }[m
+[32m+[m[32m.bi-mouse3::before { content: "\f49d"; }[m
+[32m+[m[32m.bi-music-note-beamed::before { content: "\f49e"; }[m
+[32m+[m[32m.bi-music-note-list::before { content: "\f49f"; }[m
+[32m+[m[32m.bi-music-note::before { content: "\f4a0"; }[m
+[32m+[m[32m.bi-music-player-fill::before { content: "\f4a1"; }[m
+[32m+[m[32m.bi-music-player::before { content: "\f4a2"; }[m
+[32m+[m[32m.bi-newspaper::before { content: "\f4a3"; }[m
+[32m+[m[32m.bi-node-minus-fill::before { content: "\f4a4"; }[m
+[32m+[m[32m.bi-node-minus::before { content: "\f4a5"; }[m
+[32m+[m[32m.bi-node-plus-fill::before { content: "\f4a6"; }[m
+[32m+[m[32m.bi-node-plus::before { content: "\f4a7"; }[m
+[32m+[m[32m.bi-nut-fill::before { content: "\f4a8"; }[m
+[32m+[m[32m.bi-nut::before { content: "\f4a9"; }[m
+[32m+[m[32m.bi-octagon-fill::before { content: "\f4aa"; }[m
+[32m+[m[32m.bi-octagon-half::before { content: "\f4ab"; }[m
+[32m+[m[32m.bi-octagon::before { content: "\f4ac"; }[m
+[32m+[m[32m.bi-option::before { content: "\f4ad"; }[m
+[32m+[m[32m.bi-outlet::before { content: "\f4ae"; }[m
+[32m+[m[32m.bi-paint-bucket::before { content: "\f4af"; }[m
+[32m+[m[32m.bi-palette-fill::before { content: "\f4b0"; }[m
+[32m+[m[32m.bi-palette::before { content: "\f4b1"; }[m
+[32m+[m[32m.bi-palette2::before { content: "\f4b2"; }[m
+[32m+[m[32m.bi-paperclip::before { content: "\f4b3"; }[m
+[32m+[m[32m.bi-paragraph::before { content: "\f4b4"; }[m
+[32m+[m[32m.bi-patch-check-fill::before { content: "\f4b5"; }[m
+[32m+[m[32m.bi-patch-check::before { content: "\f4b6"; }[m
+[32m+[m[32m.bi-patch-exclamation-fill::before { content: "\f4b7"; }[m
+[32m+[m[32m.bi-patch-exclamation::before { content: "\f4b8"; }[m
+[32m+[m[32m.bi-patch-minus-fill::before { content: "\f4b9"; }[m
+[32m+[m[32m.bi-patch-minus::before { content: "\f4ba"; }[m
+[32m+[m[32m.bi-patch-plus-fill::before { content: "\f4bb"; }[m
+[32m+[m[32m.bi-patch-plus::before { content: "\f4bc"; }[m
+[32m+[m[32m.bi-patch-question-fill::before { content: "\f4bd"; }[m
+[32m+[m[32m.bi-patch-question::before { content: "\f4be"; }[m
+[32m+[m[32m.bi-pause-btn-fill::before { content: "\f4bf"; }[m
+[32m+[m[32m.bi-pause-btn::before { content: "\f4c0"; }[m
+[32m+[m[32m.bi-pause-circle-fill::before { content: "\f4c1"; }[m
+[32m+[m[32m.bi-pause-circle::before { content: "\f4c2"; }[m
+[32m+[m[32m.bi-pause-fill::before { content: "\f4c3"; }[m
+[32m+[m[32m.bi-pause::before { content: "\f4c4"; }[m
+[32m+[m[32m.bi-peace-fill::before { content: "\f4c5"; }[m
+[32m+[m[32m.bi-peace::before { content: "\f4c6"; }[m
+[32m+[m[32m.bi-pen-fill::before { content: "\f4c7"; }[m
+[32m+[m[32m.bi-pen::before { content: "\f4c8"; }[m
+[32m+[m[32m.bi-pencil-fill::before { content: "\f4c9"; }[m
+[32m+[m[32m.bi-pencil-square::before { content: "\f4ca"; }[m
+[32m+[m[32m.bi-pencil::before { content: "\f4cb"; }[m
+[32m+[m[32m.bi-pentagon-fill::before { content: "\f4cc"; }[m
+[32m+[m[32m.bi-pentagon-half::before { content: "\f4cd"; }[m
+[32m+[m[32m.bi-pentagon::before { content: "\f4ce"; }[m
+[32m+[m[32m.bi-people-fill::before { content: "\f4cf"; }[m
+[32m+[m[32m.bi-people::before { content: "\f4d0"; }[m
+[32m+[m[32m.bi-percent::before { content: "\f4d1"; }[m
+[32m+[m[32m.bi-person-badge-fill::before { content: "\f4d2"; }[m
+[32m+[m[32m.bi-person-badge::before { content: "\f4d3"; }[m
+[32m+[m[32m.bi-person-bounding-box::before { content: "\f4d4"; }[m
+[32m+[m[32m.bi-person-check-fill::before { content: "\f4d5"; }[m
+[32m+[m[32m.bi-person-check::before { content: "\f4d6"; }[m
+[32m+[m[32m.bi-person-circle::before { content: "\f4d7"; }[m
+[32m+[m[32m.bi-person-dash-fill::before { content: "\f4d8"; }[m
+[32m+[m[32m.bi-person-dash::before { content: "\f4d9"; }[m
+[32m+[m[32m.bi-person-fill::before { content: "\f4da"; }[m
+[32m+[m[32m.bi-person-lines-fill::before { content: "\f4db"; }[m
+[32m+[m[32m.bi-person-plus-fill::before { content: "\f4dc"; }[m
+[32m+[m[32m.bi-person-plus::before { content: "\f4dd"; }[m
+[32m+[m[32m.bi-person-square::before { content: "\f4de"; }[m
+[32m+[m[32m.bi-person-x-fill::before { content: "\f4df"; }[m
+[32m+[m[32m.bi-person-x::before { content: "\f4e0"; }[m
+[32m+[m[32m.bi-person::before { content: "\f4e1"; }[m
+[32m+[m[32m.bi-phone-fill::before { content: "\f4e2"; }[m
+[32m+[m[32m.bi-phone-landscape-fill::before { content: "\f4e3"; }[m
+[32m+[m[32m.bi-phone-landscape::before { content: "\f4e4"; }[m
+[32m+[m[32m.bi-phone-vibrate-fill::before { content: "\f4e5"; }[m
+[32m+[m[32m.bi-phone-vibrate::before { content: "\f4e6"; }[m
+[32m+[m[32m.bi-phone::before { content: "\f4e7"; }[m
+[32m+[m[32m.bi-pie-chart-fill::before { content: "\f4e8"; }[m
+[32m+[m[32m.bi-pie-chart::before { content: "\f4e9"; }[m
+[32m+[m[32m.bi-pin-angle-fill::before { content: "\f4ea"; }[m
+[32m+[m[32m.bi-pin-angle::before { content: "\f4eb"; }[m
+[32m+[m[32m.bi-pin-fill::before { content: "\f4ec"; }[m
+[32m+[m[32m.bi-pin::before { content: "\f4ed"; }[m
+[32m+[m[32m.bi-pip-fill::before { content: "\f4ee"; }[m
+[32m+[m[32m.bi-pip::before { content: "\f4ef"; }[m
+[32m+[m[32m.bi-play-btn-fill::before { content: "\f4f0"; }[m
+[32m+[m[32m.bi-play-btn::before { content: "\f4f1"; }[m
+[32m+[m[32m.bi-play-circle-fill::before { content: "\f4f2"; }[m
+[32m+[m[32m.bi-play-circle::before { content: "\f4f3"; }[m
+[32m+[m[32m.bi-play-fill::before { content: "\f4f4"; }[m
+[32m+[m[32m.bi-play::before { content: "\f4f5"; }[m
+[32m+[m[32m.bi-plug-fill::before { content: "\f4f6"; }[m
+[32m+[m[32m.bi-plug::before { content: "\f4f7"; }[m
+[32m+[m[32m.bi-plus-circle-dotted::before { content: "\f4f8"; }[m
+[32m+[m[32m.bi-plus-circle-fill::before { content: "\f4f9"; }[m
+[32m+[m[32m.bi-plus-circle::before { content: "\f4fa"; }[m
+[32m+[m[32m.bi-plus-square-dotted::before { content: "\f4fb"; }[m
+[32m+[m[32m.bi-plus-square-fill::before { content: "\f4fc"; }[m
+[32m+[m[32m.bi-plus-square::before { content: "\f4fd"; }[m
+[32m+[m[32m.bi-plus::before { content: "\f4fe"; }[m
+[32m+[m[32m.bi-power::before { content: "\f4ff"; }[m
+[32m+[m[32m.bi-printer-fill::before { content: "\f500"; }[m
+[32m+[m[32m.bi-printer::before { content: "\f501"; }[m
+[32m+[m[32m.bi-puzzle-fill::before { content: "\f502"; }[m
+[32m+[m[32m.bi-puzzle::before { content: "\f503"; }[m
+[32m+[m[32m.bi-question-circle-fill::before { content: "\f504"; }[m
+[32m+[m[32m.bi-question-circle::before { content: "\f505"; }[m
+[32m+[m[32m.bi-question-diamond-fill::before { content: "\f506"; }[m
+[32m+[m[32m.bi-question-diamond::before { content: "\f507"; }[m
+[32m+[m[32m.bi-question-octagon-fill::before { content: "\f508"; }[m
+[32m+[m[32m.bi-question-octagon::before { content: "\f509"; }[m
+[32m+[m[32m.bi-question-square-fill::before { content: "\f50a"; }[m
+[32m+[m[32m.bi-question-square::before { content: "\f50b"; }[m
+[32m+[m[32m.bi-question::before { content: "\f50c"; }[m
+[32m+[m[32m.bi-rainbow::before { content: "\f50d"; }[m
+[32m+[m[32m.bi-receipt-cutoff::before { content: "\f50e"; }[m
+[32m+[m[32m.bi-receipt::before { content: "\f50f"; }[m
+[32m+[m[32m.bi-reception-0::before { content: "\f510"; }[m
+[32m+[m[32m.bi-reception-1::before { content: "\f511"; }[m
+[32m+[m[32m.bi-reception-2::before { content: "\f512"; }[m
+[32m+[m[32m.bi-reception-3::before { content: "\f513"; }[m
+[32m+[m[32m.bi-reception-4::before { content: "\f514"; }[m
+[32m+[m[32m.bi-record-btn-fill::before { content: "\f515"; }[m
+[32m+[m[32m.bi-record-btn::before { content: "\f516"; }[m
+[32m+[m[32m.bi-record-circle-fill::before { content: "\f517"; }[m
+[32m+[m[32m.bi-record-circle::before { content: "\f518"; }[m
+[32m+[m[32m.bi-record-fill::before { content: "\f519"; }[m
+[32m+[m[32m.bi-record::before { content: "\f51a"; }[m
+[32m+[m[32m.bi-record2-fill::before { content: "\f51b"; }[m
+[32m+[m[32m.bi-record2::before { content: "\f51c"; }[m
+[32m+[m[32m.bi-reply-all-fill::before { content: "\f51d"; }[m
+[32m+[m[32m.bi-reply-all::before { content: "\f51e"; }[m
+[32m+[m[32m.bi-reply-fill::before { content: "\f51f"; }[m
+[32m+[m[32m.bi-reply::before { content: "\f520"; }[m
+[32m+[m[32m.bi-rss-fill::before { content: "\f521"; }[m
+[32m+[m[32m.bi-rss::before { content: "\f522"; }[m
+[32m+[m[32m.bi-rulers::before { content: "\f523"; }[m
+[32m+[m[32m.bi-save-fill::before { content: "\f524"; }[m
+[32m+[m[32m.bi-save::before { content: "\f525"; }[m
+[32m+[m[32m.bi-save2-fill::before { content: "\f526"; }[m
+[32m+[m[32m.bi-save2::before { content: "\f527"; }[m
+[32m+[m[32m.bi-scissors::before { content: "\f528"; }[m
+[32m+[m[32m.bi-screwdriver::before { content: "\f529"; }[m
+[32m+[m[32m.bi-search::before { content: "\f52a"; }[m
+[32m+[m[32m.bi-segmented-nav::before { content: "\f52b"; }[m
+[32m+[m[32m.bi-server::before { content: "\f52c"; }[m
+[32m+[m[32m.bi-share-fill::before { content: "\f52d"; }[m
+[32m+[m[32m.bi-share::before { content: "\f52e"; }[m
+[32m+[m[32m.bi-shield-check::before { content: "\f52f"; }[m
+[32m+[m[32m.bi-shield-exclamation::before { content: "\f530"; }[m
+[32m+[m[32m.bi-shield-fill-check::before { content: "\f531"; }[m
+[32m+[m[32m.bi-shield-fill-exclamation::before { content: "\f532"; }[m
+[32m+[m[32m.bi-shield-fill-minus::before { content: "\f533"; }[m
+[32m+[m[32m.bi-shield-fill-plus::before { content: "\f534"; }[m
+[32m+[m[32m.bi-shield-fill-x::before { content: "\f535"; }[m
+[32m+[m[32m.bi-shield-fill::before { content: "\f536"; }[m
+[32m+[m[32m.bi-shield-lock-fill::before { content: "\f537"; }[m
+[32m+[m[32m.bi-shield-lock::before { content: "\f538"; }[m
+[32m+[m[32m.bi-shield-minus::before { content: "\f539"; }[m
+[32m+[m[32m.bi-shield-plus::before { content: "\f53a"; }[m
+[32m+[m[32m.bi-shield-shaded::before { content: "\f53b"; }[m
+[32m+[m[32m.bi-shield-slash-fill::before { content: "\f53c"; }[m
+[32m+[m[32m.bi-shield-slash::before { content: "\f53d"; }[m
+[32m+[m[32m.bi-shield-x::before { content: "\f53e"; }[m
+[32m+[m[32m.bi-shield::before { content: "\f53f"; }[m
+[32m+[m[32m.bi-shift-fill::before { content: "\f540"; }[m
+[32m+[m[32m.bi-shift::before { content: "\f541"; }[m
+[32m+[m[32m.bi-shop-window::before { content: "\f542"; }[m
+[32m+[m[32m.bi-shop::before { content: "\f543"; }[m
+[32m+[m[32m.bi-shuffle::before { content: "\f544"; }[m
+[32m+[m[32m.bi-signpost-2-fill::before { content: "\f545"; }[m
+[32m+[m[32m.bi-signpost-2::before { content: "\f546"; }[m
+[32m+[m[32m.bi-signpost-fill::before { content: "\f547"; }[m
+[32m+[m[32m.bi-signpost-split-fill::before { content: "\f548"; }[m
+[32m+[m[32m.bi-signpost-split::before { content: "\f549"; }[m
+[32m+[m[32m.bi-signpost::before { content: "\f54a"; }[m
+[32m+[m[32m.bi-sim-fill::before { content: "\f54b"; }[m
+[32m+[m[32m.bi-sim::before { content: "\f54c"; }[m
+[32m+[m[32m.bi-skip-backward-btn-fill::before { content: "\f54d"; }[m
+[32m+[m[32m.bi-skip-backward-btn::before { content: "\f54e"; }[m
+[32m+[m[32m.bi-skip-backward-circle-fill::before { content: "\f54f"; }[m
+[32m+[m[32m.bi-skip-backward-circle::before { content: "\f550"; }[m
+[32m+[m[32m.bi-skip-backward-fill::before { content: "\f551"; }[m
+[32m+[m[32m.bi-skip-backward::before { content: "\f552"; }[m
+[32m+[m[32m.bi-skip-end-btn-fill::before { content: "\f553"; }[m
+[32m+[m[32m.bi-skip-end-btn::before { content: "\f554"; }[m
+[32m+[m[32m.bi-skip-end-circle-fill::before { content: "\f555"; }[m
+[32m+[m[32m.bi-skip-end-circle::before { content: "\f556"; }[m
+[32m+[m[32m.bi-skip-end-fill::before { content: "\f557"; }[m
+[32m+[m[32m.bi-skip-end::before { content: "\f558"; }[m
+[32m+[m[32m.bi-skip-forward-btn-fill::before { content: "\f559"; }[m
+[32m+[m[32m.bi-skip-forward-btn::before { content: "\f55a"; }[m
+[32m+[m[32m.bi-skip-forward-circle-fill::before { content: "\f55b"; }[m
+[32m+[m[32m.bi-skip-forward-circle::before { content: "\f55c"; }[m
+[32m+[m[32m.bi-skip-forward-fill::before { content: "\f55d"; }[m
+[32m+[m[32m.bi-skip-forward::before { content: "\f55e"; }[m
+[32m+[m[32m.bi-skip-start-btn-fill::before { content: "\f55f"; }[m
+[32m+[m[32m.bi-skip-start-btn::before { content: "\f560"; }[m
+[32m+[m[32m.bi-skip-start-circle-fill::before { content: "\f561"; }[m
+[32m+[m[32m.bi-skip-start-circle::before { content: "\f562"; }[m
+[32m+[m[32m.bi-skip-start-fill::before { content: "\f563"; }[m
+[32m+[m[32m.bi-skip-start::before { content: "\f564"; }[m
+[32m+[m[32m.bi-slack::before { content: "\f565"; }[m
+[32m+[m[32m.bi-slash-circle-fill::before { content: "\f566"; }[m
+[32m+[m[32m.bi-slash-circle::before { content: "\f567"; }[m
+[32m+[m[32m.bi-slash-square-fill::before { content: "\f568"; }[m
+[32m+[m[32m.bi-slash-square::before { content: "\f569"; }[m
+[32m+[m[32m.bi-slash::before { content: "\f56a"; }[m
+[32m+[m[32m.bi-sliders::before { content: "\f56b"; }[m
+[32m+[m[32m.bi-smartwatch::before { content: "\f56c"; }[m
+[32m+[m[32m.bi-snow::before { content: "\f56d"; }[m
+[32m+[m[32m.bi-snow2::before { content: "\f56e"; }[m
+[32m+[m[32m.bi-snow3::before { content: "\f56f"; }[m
+[32m+[m[32m.bi-sort-alpha-down-alt::before { content: "\f570"; }[m
+[32m+[m[32m.bi-sort-alpha-down::before { content: "\f571"; }[m
+[32m+[m[32m.bi-sort-alpha-up-alt::before { content: "\f572"; }[m
+[32m+[m[32m.bi-sort-alpha-up::before { content: "\f573"; }[m
+[32m+[m[32m.bi-sort-down-alt::before { content: "\f574"; }[m
+[32m+[m[32m.bi-sort-down::before { content: "\f575"; }[m
+[32m+[m[32m.bi-sort-numeric-down-alt::before { content: "\f576"; }[m
+[32m+[m[32m.bi-sort-numeric-down::before { content: "\f577"; }[m
+[32m+[m[32m.bi-sort-numeric-up-alt::before { content: "\f578"; }[m
+[32m+[m[32m.bi-sort-numeric-up::before { content: "\f579"; }[m
+[32m+[m[32m.bi-sort-up-alt::before { content: "\f57a"; }[m
+[32m+[m[32m.bi-sort-up::before { content: "\f57b"; }[m
+[32m+[m[32m.bi-soundwave::before { content: "\f57c"; }[m
+[32m+[m[32m.bi-speaker-fill::before { content: "\f57d"; }[m
+[32m+[m[32m.bi-speaker::before { content: "\f57e"; }[m
+[32m+[m[32m.bi-speedometer::before { content: "\f57f"; }[m
+[32m+[m[32m.bi-speedometer2::before { content: "\f580"; }[m
+[32m+[m[32m.bi-spellcheck::before { content: "\f581"; }[m
+[32m+[m[32m.bi-square-fill::before { content: "\f582"; }[m
+[32m+[m[32m.bi-square-half::before { content: "\f583"; }[m
+[32m+[m[32m.bi-square::before { content: "\f584"; }[m
+[32m+[m[32m.bi-stack::before { content: "\f585"; }[m
+[32m+[m[32m.bi-star-fill::before { content: "\f586"; }[m
+[32m+[m[32m.bi-star-half::before { content: "\f587"; }[m
+[32m+[m[32m.bi-star::before { content: "\f588"; }[m
+[32m+[m[32m.bi-stars::before { content: "\f589"; }[m
+[32m+[m[32m.bi-stickies-fill::before { content: "\f58a"; }[m
+[32m+[m[32m.bi-stickies::before { content: "\f58b"; }[m
+[32m+[m[32m.bi-sticky-fill::before { content: "\f58c"; }[m
+[32m+[m[32m.bi-sticky::before { content: "\f58d"; }[m
+[32m+[m[32m.bi-stop-btn-fill::before { content: "\f58e"; }[m
+[32m+[m[32m.bi-stop-btn::before { content: "\f58f"; }[m
+[32m+[m[32m.bi-stop-circle-fill::before { content: "\f590"; }[m
+[32m+[m[32m.bi-stop-circle::before { content: "\f591"; }[m
+[32m+[m[32m.bi-stop-fill::before { content: "\f592"; }[m
+[32m+[m[32m.bi-stop::before { content: "\f593"; }[m
+[32m+[m[32m.bi-stoplights-fill::before { content: "\f594"; }[m
+[32m+[m[32m.bi-stoplights::before { content: "\f595"; }[m
+[32m+[m[32m.bi-stopwatch-fill::before { content: "\f596"; }[m
+[32m+[m[32m.bi-stopwatch::before { content: "\f597"; }[m
+[32m+[m[32m.bi-subtract::before { content: "\f598"; }[m
+[32m+[m[32m.bi-suit-club-fill::before { content: "\f599"; }[m
+[32m+[m[32m.bi-suit-club::before { content: "\f59a"; }[m
+[32m+[m[32m.bi-suit-diamond-fill::before { content: "\f59b"; }[m
+[32m+[m[32m.bi-suit-diamond::before { content: "\f59c"; }[m
+[32m+[m[32m.bi-suit-heart-fill::before { content: "\f59d"; }[m
+[32m+[m[32m.bi-suit-heart::before { content: "\f59e"; }[m
+[32m+[m[32m.bi-suit-spade-fill::before { content: "\f59f"; }[m
+[32m+[m[32m.bi-suit-spade::before { content: "\f5a0"; }[m
+[32m+[m[32m.bi-sun-fill::before { content: "\f5a1"; }[m
+[32m+[m[32m.bi-sun::before { content: "\f5a2"; }[m
+[32m+[m[32m.bi-sunglasses::before { content: "\f5a3"; }[m
+[32m+[m[32m.bi-sunrise-fill::before { content: "\f5a4"; }[m
+[32m+[m[32m.bi-sunrise::before { content: "\f5a5"; }[m
+[32m+[m[32m.bi-sunset-fill::before { content: "\f5a6"; }[m
+[32m+[m[32m.bi-sunset::before { content: "\f5a7"; }[m
+[32m+[m[32m.bi-symmetry-horizontal::before { content: "\f5a8"; }[m
+[32m+[m[32m.bi-symmetry-vertical::before { content: "\f5a9"; }[m
+[32m+[m[32m.bi-table::before { content: "\f5aa"; }[m
+[32m+[m[32m.bi-tablet-fill::before { content: "\f5ab"; }[m
+[32m+[m[32m.bi-tablet-landscape-fill::before { content: "\f5ac"; }[m
+[32m+[m[32m.bi-tablet-landscape::before { content: "\f5ad"; }[m
+[32m+[m[32m.bi-tablet::before { content: "\f5ae"; }[m
+[32m+[m[32m.bi-tag-fill::before { content: "\f5af"; }[m
+[32m+[m[32m.bi-tag::before { content: "\f5b0"; }[m
+[32m+[m[32m.bi-tags-fill::before { content: "\f5b1"; }[m
+[32m+[m[32m.bi-tags::before { content: "\f5b2"; }[m
+[32m+[m[32m.bi-telegram::before { content: "\f5b3"; }[m
+[32m+[m[32m.bi-telephone-fill::before { content: "\f5b4"; }[m
+[32m+[m[32m.bi-telephone-forward-fill::before { content: "\f5b5"; }[m
+[32m+[m[32m.bi-telephone-forward::before { content: "\f5b6"; }[m
+[32m+[m[32m.bi-telephone-inbound-fill::before { content: "\f5b7"; }[m
+[32m+[m[32m.bi-telephone-inbound::before { content: "\f5b8"; }[m
+[32m+[m[32m.bi-telephone-minus-fill::before { content: "\f5b9"; }[m
+[32m+[m[32m.bi-telephone-minus::before { content: "\f5ba"; }[m
+[32m+[m[32m.bi-telephone-outbound-fill::before { content: "\f5bb"; }[m
+[32m+[m[32m.bi-telephone-outbound::before { content: "\f5bc"; }[m
+[32m+[m[32m.bi-telephone-plus-fill::before { content: "\f5bd"; }[m
+[32m+[m[32m.bi-telephone-plus::before { content: "\f5be"; }[m
+[32m+[m[32m.bi-telephone-x-fill::before { content: "\f5bf"; }[m
+[32m+[m[32m.bi-telephone-x::before { content: "\f5c0"; }[m
+[32m+[m[32m.bi-telephone::before { content: "\f5c1"; }[m
+[32m+[m[32m.bi-terminal-fill::before { content: "\f5c2"; }[m
+[32m+[m[32m.bi-terminal::before { content: "\f5c3"; }[m
+[32m+[m[32m.bi-text-center::before { content: "\f5c4"; }[m
+[32m+[m[32m.bi-text-indent-left::before { content: "\f5c5"; }[m
+[32m+[m[32m.bi-text-indent-right::before { content: "\f5c6"; }[m
+[32m+[m[32m.bi-text-left::before { content: "\f5c7"; }[m
+[32m+[m[32m.bi-text-paragraph::before { content: "\f5c8"; }[m
+[32m+[m[32m.bi-text-right::before { content: "\f5c9"; }[m
+[32m+[m[32m.bi-textarea-resize::before { content: "\f5ca"; }[m
+[32m+[m[32m.bi-textarea-t::before { content: "\f5cb"; }[m
+[32m+[m[32m.bi-textarea::before { content: "\f5cc"; }[m
+[32m+[m[32m.bi-thermometer-half::before { content: "\f5cd"; }[m
+[32m+[m[32m.bi-thermometer-high::before { content: "\f5ce"; }[m
+[32m+[m[32m.bi-thermometer-low::before { content: "\f5cf"; }[m
+[32m+[m[32m.bi-thermometer-snow::before { content: "\f5d0"; }[m
+[32m+[m[32m.bi-thermometer-sun::before { content: "\f5d1"; }[m
+[32m+[m[32m.bi-thermometer::before { content: "\f5d2"; }[m
+[32m+[m[32m.bi-three-dots-vertical::before { content: "\f5d3"; }[m
+[32m+[m[32m.bi-three-dots::before { content: "\f5d4"; }[m
+[32m+[m[32m.bi-toggle-off::before { content: "\f5d5"; }[m
+[32m+[m[32m.bi-toggle-on::before { content: "\f5d6"; }[m
+[32m+[m[32m.bi-toggle2-off::before { content: "\f5d7"; }[m
+[32m+[m[32m.bi-toggle2-on::before { content: "\f5d8"; }[m
+[32m+[m[32m.bi-toggles::before { content: "\f5d9"; }[m
+[32m+[m[32m.bi-toggles2::before { content: "\f5da"; }[m
+[32m+[m[32m.bi-tools::before { content: "\f5db"; }[m
+[32m+[m[32m.bi-tornado::before { content: "\f5dc"; }[m
+[32m+[m[32m.bi-trash-fill::before { content: "\f5dd"; }[m
+[32m+[m[32m.bi-trash::before { content: "\f5de"; }[m
+[32m+[m[32m.bi-trash2-fill::before { content: "\f5df"; }[m
+[32m+[m[32m.bi-trash2::before { content: "\f5e0"; }[m
+[32m+[m[32m.bi-tree-fill::before { content: "\f5e1"; }[m
+[32m+[m[32m.bi-tree::before { content: "\f5e2"; }[m
+[32m+[m[32m.bi-triangle-fill::before { content: "\f5e3"; }[m
+[32m+[m[32m.bi-triangle-half::before { content: "\f5e4"; }[m
+[32m+[m[32m.bi-triangle::before { content: "\f5e5"; }[m
+[32m+[m[32m.bi-trophy-fill::before { content: "\f5e6"; }[m
+[32m+[m[32m.bi-trophy::before { content: "\f5e7"; }[m
+[32m+[m[32m.bi-tropical-storm::before { content: "\f5e8"; }[m
+[32m+[m[32m.bi-truck-flatbed::before { content: "\f5e9"; }[m
+[32m+[m[32m.bi-truck::before { content: "\f5ea"; }[m
+[32m+[m[32m.bi-tsunami::before { content: "\f5eb"; }[m
+[32m+[m[32m.bi-tv-fill::before { content: "\f5ec"; }[m
+[32m+[m[32m.bi-tv::before { content: "\f5ed"; }[m
+[32m+[m[32m.bi-twitch::before { content: "\f5ee"; }[m
+[32m+[m[32m.bi-twitter::before { content: "\f5ef"; }[m
+[32m+[m[32m.bi-type-bold::before { content: "\f5f0"; }[m
+[32m+[m[32m.bi-type-h1::before { content: "\f5f1"; }[m
+[32m+[m[32m.bi-type-h2::before { content: "\f5f2"; }[m
+[32m+[m[32m.bi-type-h3::before { content: "\f5f3"; }[m
+[32m+[m[32m.bi-type-italic::before { content: "\f5f4"; }[m
+[32m+[m[32m.bi-type-strikethrough::before { content: "\f5f5"; }[m
+[32m+[m[32m.bi-type-underline::before { content: "\f5f6"; }[m
+[32m+[m[32m.bi-type::before { content: "\f5f7"; }[m
+[32m+[m[32m.bi-ui-checks-grid::before { content: "\f5f8"; }[m
+[32m+[m[32m.bi-ui-checks::before { content: "\f5f9"; }[m
+[32m+[m[32m.bi-ui-radios-grid::before { content: "\f5fa"; }[m
+[32m+[m[32m.bi-ui-radios::before { content: "\f5fb"; }[m
+[32m+[m[32m.bi-umbrella-fill::before { content: "\f5fc"; }[m
+[32m+[m[32m.bi-umbrella::before { content: "\f5fd"; }[m
+[32m+[m[32m.bi-union::before { content: "\f5fe"; }[m
+[32m+[m[32m.bi-unlock-fill::before { content: "\f5ff"; }[m
+[32m+[m[32m.bi-unlock::before { content: "\f600"; }[m
+[32m+[m[32m.bi-upc-scan::before { content: "\f601"; }[m
+[32m+[m[32m.bi-upc::before { content: "\f602"; }[m
+[32m+[m[32m.bi-upload::before { content: "\f603"; }[m
+[32m+[m[32m.bi-vector-pen::before { content: "\f604"; }[m
+[32m+[m[32m.bi-view-list::before { content: "\f605"; }[m
+[32m+[m[32m.bi-view-stacked::before { content: "\f606"; }[m
+[32m+[m[32m.bi-vinyl-fill::before { content: "\f607"; }[m
+[32m+[m[32m.bi-vinyl::before { content: "\f608"; }[m
+[32m+[m[32m.bi-voicemail::before { content: "\f609"; }[m
+[32m+[m[32m.bi-volume-down-fill::before { content: "\f60a"; }[m
+[32m+[m[32m.bi-volume-down::before { content: "\f60b"; }[m
+[32m+[m[32m.bi-volume-mute-fill::before { content: "\f60c"; }[m
+[32m+[m[32m.bi-volume-mute::before { content: "\f60d"; }[m
+[32m+[m[32m.bi-volume-off-fill::before { content: "\f60e"; }[m
+[32m+[m[32m.bi-volume-off::before { content: "\f60f"; }[m
+[32m+[m[32m.bi-volume-up-fill::before { content: "\f610"; }[m
+[32m+[m[32m.bi-volume-up::before { content: "\f611"; }[m
+[32m+[m[32m.bi-vr::before { content: "\f612"; }[m
+[32m+[m[32m.bi-wallet-fill::before { content: "\f613"; }[m
+[32m+[m[32m.bi-wallet::before { content: "\f614"; }[m
+[32m+[m[32m.bi-wallet2::before { content: "\f615"; }[m
+[32m+[m[32m.bi-watch::before { content: "\f616"; }[m
+[32m+[m[32m.bi-water::before { content: "\f617"; }[m
+[32m+[m[32m.bi-whatsapp::before { content: "\f618"; }[m
+[32m+[m[32m.bi-wifi-1::before { content: "\f619"; }[m
+[32m+[m[32m.bi-wifi-2::before { content: "\f61a"; }[m
+[32m+[m[32m.bi-wifi-off::before { content: "\f61b"; }[m
+[32m+[m[32m.bi-wifi::before { content: "\f61c"; }[m
+[32m+[m[32m.bi-wind::before { content: "\f61d"; }[m
+[32m+[m[32m.bi-window-dock::before { content: "\f61e"; }[m
+[32m+[m[32m.bi-window-sidebar::before { content: "\f61f"; }[m
+[32m+[m[32m.bi-window::before { content: "\f620"; }[m
+[32m+[m[32m.bi-wrench::before { content: "\f621"; }[m
+[32m+[m[32m.bi-x-circle-fill::before { content: "\f622"; }[m
+[32m+[m[32m.bi-x-circle::before { content: "\f623"; }[m
+[32m+[m[32m.bi-x-diamond-fill::before { content: "\f624"; }[m
+[32m+[m[32m.bi-x-diamond::before { content: "\f625"; }[m
+[32m+[m[32m.bi-x-octagon-fill::before { content: "\f626"; }[m
+[32m+[m[32m.bi-x-octagon::before { content: "\f627"; }[m
+[32m+[m[32m.bi-x-square-fill::before { content: "\f628"; }[m
+[32m+[m[32m.bi-x-square::before { content: "\f629"; }[m
+[32m+[m[32m.bi-x::before { content: "\f62a"; }[m
+[32m+[m[32m.bi-youtube::before { content: "\f62b"; }[m
+[32m+[m[32m.bi-zoom-in::before { content: "\f62c"; }[m
+[32m+[m[32m.bi-zoom-out::before { content: "\f62d"; }[m
+[32m+[m[32m.bi-bank::before { content: "\f62e"; }[m
+[32m+[m[32m.bi-bank2::before { content: "\f62f"; }[m
+[32m+[m[32m.bi-bell-slash-fill::before { content: "\f630"; }[m
+[32m+[m[32m.bi-bell-slash::before { content: "\f631"; }[m
+[32m+[m[32m.bi-cash-coin::before { content: "\f632"; }[m
+[32m+[m[32m.bi-check-lg::before { content: "\f633"; }[m
+[32m+[m[32m.bi-coin::before { content: "\f634"; }[m
+[32m+[m[32m.bi-currency-bitcoin::before { content: "\f635"; }[m
+[32m+[m[32m.bi-currency-dollar::before { content: "\f636"; }[m
+[32m+[m[32m.bi-currency-euro::before { content: "\f637"; }[m
+[32m+[m[32m.bi-currency-exchange::before { content: "\f638"; }[m
+[32m+[m[32m.bi-currency-pound::before { content: "\f639"; }[m
+[32m+[m[32m.bi-currency-yen::before { content: "\f63a"; }[m
+[32m+[m[32m.bi-dash-lg::before { content: "\f63b"; }[m
+[32m+[m[32m.bi-exclamation-lg::before { content: "\f63c"; }[m
+[32m+[m[32m.bi-file-earmark-pdf-fill::before { content: "\f63d"; }[m
+[32m+[m[32m.bi-file-earmark-pdf::before { content: "\f63e"; }[m
+[32m+[m[32m.bi-file-pdf-fill::before { content: "\f63f"; }[m
+[32m+[m[32m.bi-file-pdf::before { content: "\f640"; }[m
+[32m+[m[32m.bi-gender-ambiguous::before { content: "\f641"; }[m
+[32m+[m[32m.bi-gender-female::before { content: "\f642"; }[m
+[32m+[m[32m.bi-gender-male::before { content: "\f643"; }[m
+[32m+[m[32m.bi-gender-trans::before { content: "\f644"; }[m
+[32m+[m[32m.bi-headset-vr::before { content: "\f645"; }[m
+[32m+[m[32m.bi-info-lg::before { content: "\f646"; }[m
+[32m+[m[32m.bi-mastodon::before { content: "\f647"; }[m
+[32m+[m[32m.bi-messenger::before { content: "\f648"; }[m
+[32m+[m[32m.bi-piggy-bank-fill::before { content: "\f649"; }[m
+[32m+[m[32m.bi-piggy-bank::before { content: "\f64a"; }[m
+[32m+[m[32m.bi-pin-map-fill::before { content: "\f64b"; }[m
+[32m+[m[32m.bi-pin-map::before { content: "\f64c"; }[m
+[32m+[m[32m.bi-plus-lg::before { content: "\f64d"; }[m
+[32m+[m[32m.bi-question-lg::before { content: "\f64e"; }[m
+[32m+[m[32m.bi-recycle::before { content: "\f64f"; }[m
+[32m+[m[32m.bi-reddit::before { content: "\f650"; }[m
+[32m+[m[32m.bi-safe-fill::before { content: "\f651"; }[m
+[32m+[m[32m.bi-safe2-fill::before { content: "\f652"; }[m
+[32m+[m[32m.bi-safe2::before { content: "\f653"; }[m
+[32m+[m[32m.bi-sd-card-fill::before { content: "\f654"; }[m
+[32m+[m[32m.bi-sd-card::before { content: "\f655"; }[m
+[32m+[m[32m.bi-skype::before { content: "\f656"; }[m
+[32m+[m[32m.bi-slash-lg::before { content: "\f657"; }[m
+[32m+[m[32m.bi-translate::before { content: "\f658"; }[m
+[32m+[m[32m.bi-x-lg::before { content: "\f659"; }[m
+[32m+[m[32m.bi-safe::before { content: "\f65a"; }[m
+[32m+[m[32m.bi-apple::before { content: "\f65b"; }[m
+[32m+[m[32m.bi-microsoft::before { content: "\f65d"; }[m
+[32m+[m[32m.bi-windows::before { content: "\f65e"; }[m
+[32m+[m[32m.bi-behance::before { content: "\f65c"; }[m
+[32m+[m[32m.bi-dribbble::before { content: "\f65f"; }[m
+[32m+[m[32m.bi-line::before { content: "\f660"; }[m
+[32m+[m[32m.bi-medium::before { content: "\f661"; }[m
+[32m+[m[32m.bi-paypal::before { content: "\f662"; }[m
+[32m+[m[32m.bi-pinterest::before { content: "\f663"; }[m
+[32m+[m[32m.bi-signal::before { content: "\f664"; }[m
+[32m+[m[32m.bi-snapchat::before { content: "\f665"; }[m
+[32m+[m[32m.bi-spotify::before { content: "\f666"; }[m
+[32m+[m[32m.bi-stack-overflow::before { content: "\f667"; }[m
+[32m+[m[32m.bi-strava::before { content: "\f668"; }[m
+[32m+[m[32m.bi-wordpress::before { content: "\f669"; }[m
+[32m+[m[32m.bi-vimeo::before { content: "\f66a"; }[m
+[32m+[m[32m.bi-activity::before { content: "\f66b"; }[m
+[32m+[m[32m.bi-easel2-fill::before { content: "\f66c"; }[m
+[32m+[m[32m.bi-easel2::before { content: "\f66d"; }[m
+[32m+[m[32m.bi-easel3-fill::before { content: "\f66e"; }[m
+[32m+[m[32m.bi-easel3::before { content: "\f66f"; }[m
+[32m+[m[32m.bi-fan::before { content: "\f670"; }[m
+[32m+[m[32m.bi-fingerprint::before { content: "\f671"; }[m
+[32m+[m[32m.bi-graph-down-arrow::before { content: "\f672"; }[m
+[32m+[m[32m.bi-graph-up-arrow::before { content: "\f673"; }[m
+[32m+[m[32m.bi-hypnotize::before { content: "\f674"; }[m
+[32m+[m[32m.bi-magic::before { content: "\f675"; }[m
+[32m+[m[32m.bi-person-rolodex::before { content: "\f676"; }[m
+[32m+[m[32m.bi-person-video::before { content: "\f677"; }[m
+[32m+[m[32m.bi-person-video2::before { content: "\f678"; }[m
+[32m+[m[32m.bi-person-video3::before { content: "\f679"; }[m
+[32m+[m[32m.bi-person-workspace::before { content: "\f67a"; }[m
+[32m+[m[32m.bi-radioactive::before { content: "\f67b"; }[m
+[32m+[m[32m.bi-webcam-fill::before { content: "\f67c"; }[m
+[32m+[m[32m.bi-webcam::before { content: "\f67d"; }[m
+[32m+[m[32m.bi-yin-yang::before { content: "\f67e"; }[m
+[32m+[m[32m.bi-bandaid-fill::before { content: "\f680"; }[m
+[32m+[m[32m.bi-bandaid::before { content: "\f681"; }[m
+[32m+[m[32m.bi-bluetooth::before { content: "\f682"; }[m
+[32m+[m[32m.bi-body-text::before { content: "\f683"; }[m
+[32m+[m[32m.bi-boombox::before { content: "\f684"; }[m
+[32m+[m[32m.bi-boxes::before { content: "\f685"; }[m
+[32m+[m[32m.bi-dpad-fill::before { content: "\f686"; }[m
+[32m+[m[32m.bi-dpad::before { content: "\f687"; }[m
+[32m+[m[32m.bi-ear-fill::before { content: "\f688"; }[m
+[32m+[m[32m.bi-ear::before { content: "\f689"; }[m
+[32m+[m[32m.bi-envelope-check-1::before { content: "\f68a"; }[m
+[32m+[m[32m.bi-envelope-check-fill::before { content: "\f68b"; }[m
+[32m+[m[32m.bi-envelope-check::before { content: "\f68c"; }[m
+[32m+[m[32m.bi-envelope-dash-1::before { content: "\f68d"; }[m
+[32m+[m[32m.bi-envelope-dash-fill::before { content: "\f68e"; }[m
+[32m+[m[32m.bi-envelope-dash::before { content: "\f68f"; }[m
+[32m+[m[32m.bi-envelope-exclamation-1::before { content: "\f690"; }[m
+[32m+[m[32m.bi-envelope-exclamation-fill::before { content: "\f691"; }[m
+[32m+[m[32m.bi-envelope-exclamation::before { content: "\f692"; }[m
+[32m+[m[32m.bi-envelope-plus-fill::before { content: "\f693"; }[m
+[32m+[m[32m.bi-envelope-plus::before { content: "\f694"; }[m
+[32m+[m[32m.bi-envelope-slash-1::before { content: "\f695"; }[m
+[32m+[m[32m.bi-envelope-slash-fill::before { content: "\f696"; }[m
+[32m+[m[32m.bi-envelope-slash::before { content: "\f697"; }[m
+[32m+[m[32m.bi-envelope-x-1::before { content: "\f698"; }[m
+[32m+[m[32m.bi-envelope-x-fill::before { content: "\f699"; }[m
+[32m+[m[32m.bi-envelope-x::before { content: "\f69a"; }[m
+[32m+[m[32m.bi-explicit-fill::before { content: "\f69b"; }[m
+[32m+[m[32m.bi-explicit::before { content: "\f69c"; }[m
+[32m+[m[32m.bi-git::before { content: "\f69d"; }[m
+[32m+[m[32m.bi-infinity::before { content: "\f69e"; }[m
+[32m+[m[32m.bi-list-columns-reverse::before { content: "\f69f"; }[m
+[32m+[m[32m.bi-list-columns::before { content: "\f6a0"; }[m
+[32m+[m[32m.bi-meta::before { content: "\f6a1"; }[m
+[32m+[m[32m.bi-mortorboard-fill::before { content: "\f6a2"; }[m
+[32m+[m[32m.bi-mortorboard::before { content: "\f6a3"; }[m
+[32m+[m[32m.bi-nintendo-switch::before { content: "\f6a4"; }[m
+[32m+[m[32m.bi-pc-display-horizontal::before { content: "\f6a5"; }[m
+[32m+[m[32m.bi-pc-display::before { content: "\f6a6"; }[m
+[32m+[m[32m.bi-pc-horizontal::before { content: "\f6a7"; }[m
+[32m+[m[32m.bi-pc::before { content: "\f6a8"; }[m
+[32m+[m[32m.bi-playstation::before { content: "\f6a9"; }[m
+[32m+[m[32m.bi-plus-slash-minus::before { content: "\f6aa"; }[m
+[32m+[m[32m.bi-projector-fill::before { content: "\f6ab"; }[m
+[32m+[m[32m.bi-projector::before { content: "\f6ac"; }[m
+[32m+[m[32m.bi-qr-code-scan::before { content: "\f6ad"; }[m
+[32m+[m[32m.bi-qr-code::before { content: "\f6ae"; }[m
+[32m+[m[32m.bi-quora::before { content: "\f6af"; }[m
+[32m+[m[32m.bi-quote::before { content: "\f6b0"; }[m
+[32m+[m[32m.bi-robot::before { content: "\f6b1"; }[m
+[32m+[m[32m.bi-send-check-fill::before { content: "\f6b2"; }[m
+[32m+[m[32m.bi-send-check::before { content: "\f6b3"; }[m
+[32m+[m[32m.bi-send-dash-fill::before { content: "\f6b4"; }[m
+[32m+[m[32m.bi-send-dash::before { content: "\f6b5"; }[m
+[32m+[m[32m.bi-send-exclamation-1::before { content: "\f6b6"; }[m
+[32m+[m[32m.bi-send-exclamation-fill::before { content: "\f6b7"; }[m
+[32m+[m[32m.bi-send-exclamation::before { content: "\f6b8"; }[m
+[32m+[m[32m.bi-send-fill::before { content: "\f6b9"; }[m
+[32m+[m[32m.bi-send-plus-fill::before { content: "\f6ba"; }[m
+[32m+[m[32m.bi-send-plus::before { content: "\f6bb"; }[m
+[32m+[m[32m.bi-send-slash-fill::before { content: "\f6bc"; }[m
+[32m+[m[32m.bi-send-slash::before { content: "\f6bd"; }[m
+[32m+[m[32m.bi-send-x-fill::before { content: "\f6be"; }[m
+[32m+[m[32m.bi-send-x::before { content: "\f6bf"; }[m
+[32m+[m[32m.bi-send::before { content: "\f6c0"; }[m
+[32m+[m[32m.bi-steam::before { content: "\f6c1"; }[m
+[32m+[m[32m.bi-terminal-dash-1::before { content: "\f6c2"; }[m
+[32m+[m[32m.bi-terminal-dash::before { content: "\f6c3"; }[m
+[32m+[m[32m.bi-terminal-plus::before { content: "\f6c4"; }[m
+[32m+[m[32m.bi-terminal-split::before { content: "\f6c5"; }[m
+[32m+[m[32m.bi-ticket-detailed-fill::before { content: "\f6c6"; }[m
+[32m+[m[32m.bi-ticket-detailed::before { content: "\f6c7"; }[m
+[32m+[m[32m.bi-ticket-fill::before { content: "\f6c8"; }[m
+[32m+[m[32m.bi-ticket-perforated-fill::before { content: "\f6c9"; }[m
+[32m+[m[32m.bi-ticket-perforated::before { content: "\f6ca"; }[m
+[32m+[m[32m.bi-ticket::before { content: "\f6cb"; }[m
+[32m+[m[32m.bi-tiktok::before { content: "\f6cc"; }[m
+[32m+[m[32m.bi-window-dash::before { content: "\f6cd"; }[m
+[32m+[m[32m.bi-window-desktop::before { content: "\f6ce"; }[m
+[32m+[m[32m.bi-window-fullscreen::before { content: "\f6cf"; }[m
+[32m+[m[32m.bi-window-plus::before { content: "\f6d0"; }[m
+[32m+[m[32m.bi-window-split::before { content: "\f6d1"; }[m
+[32m+[m[32m.bi-window-stack::before { content: "\f6d2"; }[m
+[32m+[m[32m.bi-window-x::before { content: "\f6d3"; }[m
+[32m+[m[32m.bi-xbox::before { content: "\f6d4"; }[m
+[32m+[m[32m.bi-ethernet::before { content: "\f6d5"; }[m
+[32m+[m[32m.bi-hdmi-fill::before { content: "\f6d6"; }[m
+[32m+[m[32m.bi-hdmi::before { content: "\f6d7"; }[m
+[32m+[m[32m.bi-usb-c-fill::before { content: "\f6d8"; }[m
+[32m+[m[32m.bi-usb-c::before { content: "\f6d9"; }[m
+[32m+[m[32m.bi-usb-fill::before { content: "\f6da"; }[m
+[32m+[m[32m.bi-usb-plug-fill::before { content: "\f6db"; }[m
+[32m+[m[32m.bi-usb-plug::before { content: "\f6dc"; }[m
+[32m+[m[32m.bi-usb-symbol::before { content: "\f6dd"; }[m
+[32m+[m[32m.bi-usb::before { content: "\f6de"; }[m
+[32m+[m[32m.bi-boombox-fill::before { content: "\f6df"; }[m
+[32m+[m[32m.bi-displayport-1::before { content: "\f6e0"; }[m
+[32m+[m[32m.bi-displayport::before { content: "\f6e1"; }[m
+[32m+[m[32m.bi-gpu-card::before { content: "\f6e2"; }[m
+[32m+[m[32m.bi-memory::before { content: "\f6e3"; }[m
+[32m+[m[32m.bi-modem-fill::before { content: "\f6e4"; }[m
+[32m+[m[32m.bi-modem::before { content: "\f6e5"; }[m
+[32m+[m[32m.bi-motherboard-fill::before { content: "\f6e6"; }[m
+[32m+[m[32m.bi-motherboard::before { content: "\f6e7"; }[m
+[32m+[m[32m.bi-optical-audio-fill::before { content: "\f6e8"; }[m
+[32m+[m[32m.bi-optical-audio::before { content: "\f6e9"; }[m
+[32m+[m[32m.bi-pci-card::before { content: "\f6ea"; }[m
+[32m+[m[32m.bi-router-fill::before { content: "\f6eb"; }[m
+[32m+[m[32m.bi-router::before { content: "\f6ec"; }[m
+[32m+[m[32m.bi-ssd-fill::before { content: "\f6ed"; }[m
+[32m+[m[32m.bi-ssd::before { content: "\f6ee"; }[m
+[32m+[m[32m.bi-thunderbolt-fill::before { content: "\f6ef"; }[m
+[32m+[m[32m.bi-thunderbolt::before { content: "\f6f0"; }[m
+[32m+[m[32m.bi-usb-drive-fill::before { content: "\f6f1"; }[m
+[32m+[m[32m.bi-usb-drive::before { content: "\f6f2"; }[m
+[32m+[m[32m.bi-usb-micro-fill::before { content: "\f6f3"; }[m
+[32m+[m[32m.bi-usb-micro::before { content: "\f6f4"; }[m
+[32m+[m[32m.bi-usb-mini-fill::before { content: "\f6f5"; }[m
+[32m+[m[32m.bi-usb-mini::before { content: "\f6f6"; }[m
+[32m+[m[32m.bi-cloud-haze2::before { content: "\f6f7"; }[m
+[32m+[m[32m.bi-device-hdd-fill::before { content: "\f6f8"; }[m
+[32m+[m[32m.bi-device-hdd::before { content: "\f6f9"; }[m
+[32m+[m[32m.bi-device-ssd-fill::before { content: "\f6fa"; }[m
+[32m+[m[32m.bi-device-ssd::before { content: "\f6fb"; }[m
+[32m+[m[32m.bi-displayport-fill::before { content: "\f6fc"; }[m
+[32m+[m[32m.bi-mortarboard-fill::before { content: "\f6fd"; }[m
+[32m+[m[32m.bi-mortarboard::before { content: "\f6fe"; }[m
+[32m+[m[32m.bi-terminal-x::before { content: "\f6ff"; }[m
+[32m+[m[32m.bi-arrow-through-heart-fill::before { content: "\f700"; }[m
+[32m+[m[32m.bi-arrow-through-heart::before { content: "\f701"; }[m
+[32m+[m[32m.bi-badge-sd-fill::before { content: "\f702"; }[m
+[32m+[m[32m.bi-badge-sd::before { content: "\f703"; }[m
+[32m+[m[32m.bi-bag-heart-fill::before { content: "\f704"; }[m
+[32m+[m[32m.bi-bag-heart::before { content: "\f705"; }[m
+[32m+[m[32m.bi-balloon-fill::before { content: "\f706"; }[m
+[32m+[m[32m.bi-balloon-heart-fill::before { content: "\f707"; }[m
+[32m+[m[32m.bi-balloon-heart::before { content: "\f708"; }[m
+[32m+[m[32m.bi-balloon::before { content: "\f709"; }[m
+[32m+[m[32m.bi-box2-fill::before { content: "\f70a"; }[m
+[32m+[m[32m.bi-box2-heart-fill::before { content: "\f70b"; }[m
+[32m+[m[32m.bi-box2-heart::before { content: "\f70c"; }[m
+[32m+[m[32m.bi-box2::before { content: "\f70d"; }[m
+[32m+[m[32m.bi-braces-asterisk::before { content: "\f70e"; }[m
+[32m+[m[32m.bi-calendar-heart-fill::before { content: "\f70f"; }[m
+[32m+[m[32m.bi-calendar-heart::before { content: "\f710"; }[m
+[32m+[m[32m.bi-calendar2-heart-fill::before { content: "\f711"; }[m
+[32m+[m[32m.bi-calendar2-heart::before { content: "\f712"; }[m
+[32m+[m[32m.bi-chat-heart-fill::before { content: "\f713"; }[m
+[32m+[m[32m.bi-chat-heart::before { content: "\f714"; }[m
+[32m+[m[32m.bi-chat-left-heart-fill::before { content: "\f715"; }[m
+[32m+[m[32m.bi-chat-left-heart::before { content: "\f716"; }[m
+[32m+[m[32m.bi-chat-right-heart-fill::before { content: "\f717"; }[m
+[32m+[m[32m.bi-chat-right-heart::before { content: "\f718"; }[m
+[32m+[m[32m.bi-chat-square-heart-fill::before { content: "\f719"; }[m
+[32m+[m[32m.bi-chat-square-heart::before { content: "\f71a"; }[m
+[32m+[m[32m.bi-clipboard-check-fill::before { content: "\f71b"; }[m
+[32m+[m[32m.bi-clipboard-data-fill::before { content: "\f71c"; }[m
+[32m+[m[32m.bi-clipboard-fill::before { content: "\f71d"; }[m
+[32m+[m[32m.bi-clipboard-heart-fill::before { content: "\f71e"; }[m
+[32m+[m[32m.bi-clipboard-heart::before { content: "\f71f"; }[m
+[32m+[m[32m.bi-clipboard-minus-fill::before { content: "\f720"; }[m
+[32m+[m[32m.bi-clipboard-plus-fill::before { content: "\f721"; }[m
+[32m+[m[32m.bi-clipboard-pulse::before { content: "\f722"; }[m
+[32m+[m[32m.bi-clipboard-x-fill::before { content: "\f723"; }[m
+[32m+[m[32m.bi-clipboard2-check-fill::before { content: "\f724"; }[m
+[32m+[m[32m.bi-clipboard2-check::before { content: "\f725"; }[m
+[32m+[m[32m.bi-clipboard2-data-fill::before { content: "\f726"; }[m
+[32m+[m[32m.bi-clipboard2-data::before { content: "\f727"; }[m
+[32m+[m[32m.bi-clipboard2-fill::before { content: "\f728"; }[m
+[32m+[m[32m.bi-clipboard2-heart-fill::before { content: "\f729"; }[m
+[32m+[m[32m.bi-clipboard2-heart::before { content: "\f72a"; }[m
+[32m+[m[32m.bi-clipboard2-minus-fill::before { content: "\f72b"; }[m
+[32m+[m[32m.bi-clipboard2-minus::before { content: "\f72c"; }[m
+[32m+[m[32m.bi-clipboard2-plus-fill::before { content: "\f72d"; }[m
+[32m+[m[32m.bi-clipboard2-plus::before { content: "\f72e"; }[m
+[32m+[m[32m.bi-clipboard2-pulse-fill::before { content: "\f72f"; }[m
+[32m+[m[32m.bi-clipboard2-pulse::before { content: "\f730"; }[m
+[32m+[m[32m.bi-clipboard2-x-fill::before { content: "\f731"; }[m
+[32m+[m[32m.bi-clipboard2-x::before { content: "\f732"; }[m
+[32m+[m[32m.bi-clipboard2::before { content: "\f733"; }[m
+[32m+[m[32m.bi-emoji-kiss-fill::before { content: "\f734"; }[m
+[32m+[m[32m.bi-emoji-kiss::before { content: "\f735"; }[m
+[32m+[m[32m.bi-envelope-heart-fill::before { content: "\f736"; }[m
+[32m+[m[32m.bi-envelope-heart::before { content: "\f737"; }[m
+[32m+[m[32m.bi-envelope-open-heart-fill::before { content: "\f738"; }[m
+[32m+[m[32m.bi-envelope-open-heart::before { content: "\f739"; }[m
+[32m+[m[32m.bi-envelope-paper-fill::before { content: "\f73a"; }[m
+[32m+[m[32m.bi-envelope-paper-heart-fill::before { content: "\f73b"; }[m
+[32m+[m[32m.bi-envelope-paper-heart::before { content: "\f73c"; }[m
+[32m+[m[32m.bi-envelope-paper::before { content: "\f73d"; }[m
+[32m+[m[32m.bi-filetype-aac::before { content: "\f73e"; }[m
+[32m+[m[32m.bi-filetype-ai::before { content: "\f73f"; }[m
+[32m+[m[32m.bi-filetype-bmp::before { content: "\f740"; }[m
+[32m+[m[32m.bi-filetype-cs::before { content: "\f741"; }[m
+[32m+[m[32m.bi-filetype-css::before { content: "\f742"; }[m
+[32m+[m[32m.bi-filetype-csv::before { content: "\f743"; }[m
+[32m+[m[32m.bi-filetype-doc::before { content: "\f744"; }[m
+[32m+[m[32m.bi-filetype-docx::before { content: "\f745"; }[m
+[32m+[m[32m.bi-filetype-exe::before { content: "\f746"; }[m
+[32m+[m[32m.bi-filetype-gif::before { content: "\f747"; }[m
+[32m+[m[32m.bi-filetype-heic::before { content: "\f748"; }[m
+[32m+[m[32m.bi-filetype-html::before { content: "\f749"; }[m
+[32m+[m[32m.bi-filetype-java::before { content: "\f74a"; }[m
+[32m+[m[32m.bi-filetype-jpg::before { content: "\f74b"; }[m
+[32m+[m[32m.bi-filetype-js::before { content: "\f74c"; }[m
+[32m+[m[32m.bi-filetype-jsx::before { content: "\f74d"; }[m
+[32m+[m[32m.bi-filetype-key::before { content: "\f74e"; }[m
+[32m+[m[32m.bi-filetype-m4p::before { content: "\f74f"; }[m
+[32m+[m[32m.bi-filetype-md::before { content: "\f750"; }[m
+[32m+[m[32m.bi-filetype-mdx::before { content: "\f751"; }[m
+[32m+[m[32m.bi-filetype-mov::before { content: "\f752"; }[m
+[32m+[m[32m.bi-filetype-mp3::before { content: "\f753"; }[m
+[32m+[m[32m.bi-filetype-mp4::before { content: "\f754"; }[m
+[32m+[m[32m.bi-filetype-otf::before { content: "\f755"; }[m
+[32m+[m[32m.bi-filetype-pdf::before { content: "\f756"; }[m
+[32m+[m[32m.bi-filetype-php::before { content: "\f757"; }[m
+[32m+[m[32m.bi-filetype-png::before { content: "\f758"; }[m
+[32m+[m[32m.bi-filetype-ppt-1::before { content: "\f759"; }[m
+[32m+[m[32m.bi-filetype-ppt::before { content: "\f75a"; }[m
+[32m+[m[32m.bi-filetype-psd::before { content: "\f75b"; }[m
+[32m+[m[32m.bi-filetype-py::before { content: "\f75c"; }[m
+[32m+[m[32m.bi-filetype-raw::before { content: "\f75d"; }[m
+[32m+[m[32m.bi-filetype-rb::before { content: "\f75e"; }[m
+[32m+[m[32m.bi-filetype-sass::before { content: "\f75f"; }[m
+[32m+[m[32m.bi-filetype-scss::before { content: "\f760"; }[m
+[32m+[m[32m.bi-filetype-sh::before { content: "\f761"; }[m
+[32m+[m[32m.bi-filetype-svg::before { content: "\f762"; }[m
+[32m+[m[32m.bi-filetype-tiff::before { content: "\f763"; }[m
+[32m+[m[32m.bi-filetype-tsx::before { content: "\f764"; }[m
+[32m+[m[32m.bi-filetype-ttf::before { content: "\f765"; }[m
+[32m+[m[32m.bi-filetype-txt::before { content: "\f766"; }[m
+[32m+[m[32m.bi-filetype-wav::before { content: "\f767"; }[m
+[32m+[m[32m.bi-filetype-woff::before { content: "\f768"; }[m
+[32m+[m[32m.bi-filetype-xls-1::before { content: "\f769"; }[m
+[32m+[m[32m.bi-filetype-xls::before { content: "\f76a"; }[m
+[32m+[m[32m.bi-filetype-xml::before { content: "\f76b"; }[m
+[32m+[m[32m.bi-filetype-yml::before { content: "\f76c"; }[m
+[32m+[m[32m.bi-heart-arrow::before { content: "\f76d"; }[m
+[32m+[m[32m.bi-heart-pulse-fill::before { content: "\f76e"; }[m
+[32m+[m[32m.bi-heart-pulse::before { content: "\f76f"; }[m
+[32m+[m[32m.bi-heartbreak-fill::before { content: "\f770"; }[m
+[32m+[m[32m.bi-heartbreak::before { content: "\f771"; }[m
+[32m+[m[32m.bi-hearts::before { content: "\f772"; }[m
+[32m+[m[32m.bi-hospital-fill::before { content: "\f773"; }[m
+[32m+[m[32m.bi-hospital::before { content: "\f774"; }[m
+[32m+[m[32m.bi-house-heart-fill::before { content: "\f775"; }[m
+[32m+[m[32m.bi-house-heart::before { content: "\f776"; }[m
+[32m+[m[32m.bi-incognito::before { content: "\f777"; }[m
+[32m+[m[32m.bi-magnet-fill::before { content: "\f778"; }[m
+[32m+[m[32m.bi-magnet::before { content: "\f779"; }[m
+[32m+[m[32m.bi-person-heart::before { content: "\f77a"; }[m
+[32m+[m[32m.bi-person-hearts::before { content: "\f77b"; }[m
+[32m+[m[32m.bi-phone-flip::before { content: "\f77c"; }[m
+[32m+[m[32m.bi-plugin::before { content: "\f77d"; }[m
+[32m+[m[32m.bi-postage-fill::before { content: "\f77e"; }[m
+[32m+[m[32m.bi-postage-heart-fill::before { content: "\f77f"; }[m
+[32m+[m[32m.bi-postage-heart::before { content: "\f780"; }[m
+[32m+[m[32m.bi-postage::before { content: "\f781"; }[m
+[32m+[m[32m.bi-postcard-fill::before { content: "\f782"; }[m
+[32m+[m[32m.bi-postcard-heart-fill::before { content: "\f783"; }[m
+[32m+[m[32m.bi-postcard-heart::before { content: "\f784"; }[m
+[32m+[m[32m.bi-postcard::before { content: "\f785"; }[m
+[32m+[m[32m.bi-search-heart-fill::before { content: "\f786"; }[m
+[32m+[m[32m.bi-search-heart::before { content: "\f787"; }[m
+[32m+[m[32m.bi-sliders2-vertical::before { content: "\f788"; }[m
+[32m+[m[32m.bi-sliders2::before { content: "\f789"; }[m
+[32m+[m[32m.bi-trash3-fill::before { content: "\f78a"; }[m
+[32m+[m[32m.bi-trash3::before { content: "\f78b"; }[m
+[32m+[m[32m.bi-valentine::before { content: "\f78c"; }[m
+[32m+[m[32m.bi-valentine2::before { content: "\f78d"; }[m
+[32m+[m[32m.bi-wrench-adjustable-circle-fill::before { content: "\f78e"; }[m
+[32m+[m[32m.bi-wrench-adjustable-circle::before { content: "\f78f"; }[m
+[32m+[m[32m.bi-wrench-adjustable::before { content: "\f790"; }[m
+[32m+[m[32m.bi-filetype-json::before { content: "\f791"; }[m
+[32m+[m[32m.bi-filetype-pptx::before { content: "\f792"; }[m
+[32m+[m[32m.bi-filetype-xlsx::before { content: "\f793"; }[m
+[32m+[m[32m.bi-1-circle-1::before { content: "\f794"; }[m
+[32m+[m[32m.bi-1-circle-fill-1::before { content: "\f795"; }[m
+[32m+[m[32m.bi-1-circle-fill::before { content: "\f796"; }[m
+[32m+[m[32m.bi-1-circle::before { content: "\f797"; }[m
+[32m+[m[32m.bi-1-square-fill::before { content: "\f798"; }[m
+[32m+[m[32m.bi-1-square::before { content: "\f799"; }[m
+[32m+[m[32m.bi-2-circle-1::before { content: "\f79a"; }[m
+[32m+[m[32m.bi-2-circle-fill-1::before { content: "\f79b"; }[m
+[32m+[m[32m.bi-2-circle-fill::before { content: "\f79c"; }[m
+[32m+[m[32m.bi-2-circle::before { content: "\f79d"; }[m
+[32m+[m[32m.bi-2-square-fill::before { content: "\f79e"; }[m
+[32m+[m[32m.bi-2-square::before { content: "\f79f"; }[m
+[32m+[m[32m.bi-3-circle-1::before { content: "\f7a0"; }[m
+[32m+[m[32m.bi-3-circle-fill-1::before { content: "\f7a1"; }[m
+[32m+[m[32m.bi-3-circle-fill::before { content: "\f7a2"; }[m
+[32m+[m[32m.bi-3-circle::before { content: "\f7a3"; }[m
+[32m+[m[32m.bi-3-square-fill::before { content: "\f7a4"; }[m
+[32m+[m[32m.bi-3-square::before { content: "\f7a5"; }[m
+[32m+[m[32m.bi-4-circle-1::before { content: "\f7a6"; }[m
+[32m+[m[32m.bi-4-circle-fill-1::before { content: "\f7a7"; }[m
+[32m+[m[32m.bi-4-circle-fill::before { content: "\f7a8"; }[m
+[32m+[m[32m.bi-4-circle::before { content: "\f7a9"; }[m
+[32m+[m[32m.bi-4-square-fill::before { content: "\f7aa"; }[m
+[32m+[m[32m.bi-4-square::before { content: "\f7ab"; }[m
+[32m+[m[32m.bi-5-circle-1::before { content: "\f7ac"; }[m
+[32m+[m[32m.bi-5-circle-fill-1::before { content: "\f7ad"; }[m
+[32m+[m[32m.bi-5-circle-fill::before { content: "\f7ae"; }[m
+[32m+[m[32m.bi-5-circle::before { content: "\f7af"; }[m
+[32m+[m[32m.bi-5-square-fill::before { content: "\f7b0"; }[m
+[32m+[m[32m.bi-5-square::before { content: "\f7b1"; }[m
+[32m+[m[32m.bi-6-circle-1::before { content: "\f7b2"; }[m
+[32m+[m[32m.bi-6-circle-fill-1::before { content: "\f7b3"; }[m
+[32m+[m[32m.bi-6-circle-fill::before { content: "\f7b4"; }[m
+[32m+[m[32m.bi-6-circle::before { content: "\f7b5"; }[m
+[32m+[m[32m.bi-6-square-fill::before { content: "\f7b6"; }[m
+[32m+[m[32m.bi-6-square::before { content: "\f7b7"; }[m
+[32m+[m[32m.bi-7-circle-1::before { content: "\f7b8"; }[m
+[32m+[m[32m.bi-7-circle-fill-1::before { content: "\f7b9"; }[m
+[32m+[m[32m.bi-7-circle-fill::before { content: "\f7ba"; }[m
+[32m+[m[32m.bi-7-circle::before { content: "\f7bb"; }[m
+[32m+[m[32m.bi-7-square-fill::before { content: "\f7bc"; }[m
+[32m+[m[32m.bi-7-square::before { content: "\f7bd"; }[m
+[32m+[m[32m.bi-8-circle-1::before { content: "\f7be"; }[m
+[32m+[m[32m.bi-8-circle-fill-1::before { content: "\f7bf"; }[m
+[32m+[m[32m.bi-8-circle-fill::before { content: "\f7c0"; }[m
+[32m+[m[32m.bi-8-circle::before { content: "\f7c1"; }[m
+[32m+[m[32m.bi-8-square-fill::before { content: "\f7c2"; }[m
+[32m+[m[32m.bi-8-square::before { content: "\f7c3"; }[m
+[32m+[m[32m.bi-9-circle-1::before { content: "\f7c4"; }[m
+[32m+[m[32m.bi-9-circle-fill-1::before { content: "\f7c5"; }[m
+[32m+[m[32m.bi-9-circle-fill::before { content: "\f7c6"; }[m
+[32m+[m[32m.bi-9-circle::before { content: "\f7c7"; }[m
+[32m+[m[32m.bi-9-square-fill::before { content: "\f7c8"; }[m
+[32m+[m[32m.bi-9-square::before { content: "\f7c9"; }[m
+[32m+[m[32m.bi-airplane-engines-fill::before { content: "\f7ca"; }[m
+[32m+[m[32m.bi-airplane-engines::before { content: "\f7cb"; }[m
+[32m+[m[32m.bi-airplane-fill::before { content: "\f7cc"; }[m
+[32m+[m[32m.bi-airplane::before { content: "\f7cd"; }[m
+[32m+[m[32m.bi-alexa::before { content: "\f7ce"; }[m
+[32m+[m[32m.bi-alipay::before { content: "\f7cf"; }[m
+[32m+[m[32m.bi-android::before { content: "\f7d0"; }[m
+[32m+[m[32m.bi-android2::before { content: "\f7d1"; }[m
+[32m+[m[32m.bi-box-fill::before { content: "\f7d2"; }[m
+[32m+[m[32m.bi-box-seam-fill::before { content: "\f7d3"; }[m
+[32m+[m[32m.bi-browser-chrome::before { content: "\f7d4"; }[m
+[32m+[m[32m.bi-browser-edge::before { content: "\f7d5"; }[m
+[32m+[m[32m.bi-browser-firefox::before { content: "\f7d6"; }[m
+[32m+[m[32m.bi-browser-safari::before { content: "\f7d7"; }[m
+[32m+[m[32m.bi-c-circle-1::before { content: "\f7d8"; }[m
+[32m+[m[32m.bi-c-circle-fill-1::before { content: "\f7d9"; }[m
+[32m+[m[32m.bi-c-circle-fill::before { content: "\f7da"; }[m
+[32m+[m[32m.bi-c-circle::before { content: "\f7db"; }[m
+[32m+[m[32m.bi-c-square-fill::before { content: "\f7dc"; }[m
+[32m+[m[32m.bi-c-square::before { content: "\f7dd"; }[m
+[32m+[m[32m.bi-capsule-pill::before { content: "\f7de"; }[m
+[32m+[m[32m.bi-capsule::before { content: "\f7df"; }[m
+[32m+[m[32m.bi-car-front-fill::before { content: "\f7e0"; }[m
+[32m+[m[32m.bi-car-front::before { content: "\f7e1"; }[m
+[32m+[m[32m.bi-cassette-fill::before { content: "\f7e2"; }[m
+[32m+[m[32m.bi-cassette::before { content: "\f7e3"; }[m
+[32m+[m[32m.bi-cc-circle-1::before { content: "\f7e4"; }[m
+[32m+[m[32m.bi-cc-circle-fill-1::before { content: "\f7e5"; }[m
+[32m+[m[32m.bi-cc-circle-fill::before { content: "\f7e6"; }[m
+[32m+[m[32m.bi-cc-circle::before { content: "\f7e7"; }[m
+[32m+[m[32m.bi-cc-square-fill::before { content: "\f7e8"; }[m
+[32m+[m[32m.bi-cc-square::before { content: "\f7e9"; }[m
+[32m+[m[32m.bi-cup-hot-fill::before { content: "\f7ea"; }[m
+[32m+[m[32m.bi-cup-hot::before { content: "\f7eb"; }[m
+[32m+[m[32m.bi-currency-rupee::before { content: "\f7ec"; }[m
+[32m+[m[32m.bi-dropbox::before { content: "\f7ed"; }[m
+[32m+[m[32m.bi-escape::before { content: "\f7ee"; }[m
+[32m+[m[32m.bi-fast-forward-btn-fill::before { content: "\f7ef"; }[m
+[32m+[m[32m.bi-fast-forward-btn::before { content: "\f7f0"; }[m
+[32m+[m[32m.bi-fast-forward-circle-fill::before { content: "\f7f1"; }[m
+[32m+[m[32m.bi-fast-forward-circle::before { content: "\f7f2"; }[m
+[32m+[m[32m.bi-fast-forward-fill::before { content: "\f7f3"; }[m
+[32m+[m[32m.bi-fast-forward::before { content: "\f7f4"; }[m
+[32m+[m[32m.bi-filetype-sql::before { content: "\f7f5"; }[m
+[32m+[m[32m.bi-fire::before { content: "\f7f6"; }[m
+[32m+[m[32m.bi-google-play::before { content: "\f7f7"; }[m
+[32m+[m[32m.bi-h-circle-1::before { content: "\f7f8"; }[m
+[32m+[m[32m.bi-h-circle-fill-1::before { content: "\f7f9"; }[m
+[32m+[m[32m.bi-h-circle-fill::before { content: "\f7fa"; }[m
+[32m+[m[32m.bi-h-circle::before { content: "\f7fb"; }[m
+[32m+[m[32m.bi-h-square-fill::before { content: "\f7fc"; }[m
+[32m+[m[32m.bi-h-square::before { content: "\f7fd"; }[m
+[32m+[m[32m.bi-indent::before { content: "\f7fe"; }[m
+[32m+[m[32m.bi-lungs-fill::before { content: "\f7ff"; }[m
+[32m+[m[32m.bi-lungs::before { content: "\f800"; }[m
+[32m+[m[32m.bi-microsoft-teams::before { content: "\f801"; }[m
+[32m+[m[32m.bi-p-circle-1::before { content: "\f802"; }[m
+[32m+[m[32m.bi-p-circle-fill-1::before { content: "\f803"; }[m
+[32m+[m[32m.bi-p-circle-fill::before { content: "\f804"; }[m
+[32m+[m[32m.bi-p-circle::before { content: "\f805"; }[m
+[32m+[m[32m.bi-p-square-fill::before { content: "\f806"; }[m
+[32m+[m[32m.bi-p-square::before { content: "\f807"; }[m
+[32m+[m[32m.bi-pass-fill::before { content: "\f808"; }[m
+[32m+[m[32m.bi-pass::before { content: "\f809"; }[m
+[32m+[m[32m.bi-prescription::before { content: "\f80a"; }[m
+[32m+[m[32m.bi-prescription2::before { content: "\f80b"; }[m
+[32m+[m[32m.bi-r-circle-1::before { content: "\f80c"; }[m
+[32m+[m[32m.bi-r-circle-fill-1::before { content: "\f80d"; }[m
+[32m+[m[32m.bi-r-circle-fill::before { content: "\f80e"; }[m
+[32m+[m[32m.bi-r-circle::before { content: "\f80f"; }[m
+[32m+[m[32m.bi-r-square-fill::before { content: "\f810"; }[m
+[32m+[m[32m.bi-r-square::before { content: "\f811"; }[m
+[32m+[m[32m.bi-repeat-1::before { content: "\f812"; }[m
+[32m+[m[32m.bi-repeat::before { content: "\f813"; }[m
+[32m+[m[32m.bi-rewind-btn-fill::before { content: "\f814"; }[m
+[32m+[m[32m.bi-rewind-btn::before { content: "\f815"; }[m
+[32m+[m[32m.bi-rewind-circle-fill::before { content: "\f816"; }[m
+[32m+[m[32m.bi-rewind-circle::before { content: "\f817"; }[m
+[32m+[m[32m.bi-rewind-fill::before { content: "\f818"; }[m
+[32m+[m[32m.bi-rewind::before { content: "\f819"; }[m
+[32m+[m[32m.bi-train-freight-front-fill::before { content: "\f81a"; }[m
+[32m+[m[32m.bi-train-freight-front::before { content: "\f81b"; }[m
+[32m+[m[32m.bi-train-front-fill::before { content: "\f81c"; }[m
+[32m+[m[32m.bi-train-front::before { content: "\f81d"; }[m
+[32m+[m[32m.bi-train-lightrail-front-fill::before { content: "\f81e"; }[m
+[32m+[m[32m.bi-train-lightrail-front::before { content: "\f81f"; }[m
+[32m+[m[32m.bi-truck-front-fill::before { content: "\f820"; }[m
+[32m+[m[32m.bi-truck-front::before { content: "\f821"; }[m
+[32m+[m[32m.bi-ubuntu::before { content: "\f822"; }[m
+[32m+[m[32m.bi-unindent::before { content: "\f823"; }[m
+[32m+[m[32m.bi-unity::before { content: "\f824"; }[m
+[32m+[m[32m.bi-universal-access-circle::before { content: "\f825"; }[m
+[32m+[m[32m.bi-universal-access::before { content: "\f826"; }[m
+[32m+[m[32m.bi-virus::before { content: "\f827"; }[m
+[32m+[m[32m.bi-virus2::before { content: "\f828"; }[m
+[32m+[m[32m.bi-wechat::before { content: "\f829"; }[m
+[32m+[m[32m.bi-yelp::before { content: "\f82a"; }[m
+[32m+[m[32m.bi-sign-stop-fill::before { content: "\f82b"; }[m
+[32m+[m[32m.bi-sign-stop-lights-fill::before { content: "\f82c"; }[m
+[32m+[m[32m.bi-sign-stop-lights::before { content: "\f82d"; }[m
+[32m+[m[32m.bi-sign-stop::before { content: "\f82e"; }[m
+[32m+[m[32m.bi-sign-turn-left-fill::before { content: "\f82f"; }[m
+[32m+[m[32m.bi-sign-turn-left::before { content: "\f830"; }[m
+[32m+[m[32m.bi-sign-turn-right-fill::before { content: "\f831"; }[m
+[32m+[m[32m.bi-sign-turn-right::before { content: "\f832"; }[m
+[32m+[m[32m.bi-sign-turn-slight-left-fill::before { content: "\f833"; }[m
+[32m+[m[32m.bi-sign-turn-slight-left::before { content: "\f834"; }[m
+[32m+[m[32m.bi-sign-turn-slight-right-fill::before { content: "\f835"; }[m
+[32m+[m[32m.bi-sign-turn-slight-right::before { content: "\f836"; }[m
+[32m+[m[32m.bi-sign-yield-fill::before { content: "\f837"; }[m
+[32m+[m[32m.bi-sign-yield::before { content: "\f838"; }[m
+[32m+[m[32m.bi-ev-station-fill::before { content: "\f839"; }[m
+[32m+[m[32m.bi-ev-station::before { content: "\f83a"; }[m
+[32m+[m[32m.bi-fuel-pump-diesel-fill::before { content: "\f83b"; }[m
+[32m+[m[32m.bi-fuel-pump-diesel::before { content: "\f83c"; }[m
+[32m+[m[32m.bi-fuel-pump-fill::before { content: "\f83d"; }[m
+[32m+[m[32m.bi-fuel-pump::before { content: "\f83e"; }[m
+[32m+[m[32m.bi-0-circle-fill::before { content: "\f83f"; }[m
+[32m+[m[32m.bi-0-circle::before { content: "\f840"; }[m
+[32m+[m[32m.bi-0-square-fill::before { content: "\f841"; }[m
+[32m+[m[32m.bi-0-square::before { content: "\f842"; }[m
+[32m+[m[32m.bi-rocket-fill::before { content: "\f843"; }[m
+[32m+[m[32m.bi-rocket-takeoff-fill::before { content: "\f844"; }[m
+[32m+[m[32m.bi-rocket-takeoff::before { content: "\f845"; }[m
+[32m+[m[32m.bi-rocket::before { content: "\f846"; }[m
+[32m+[m[32m.bi-stripe::before { content: "\f847"; }[m
+[32m+[m[32m.bi-subscript::before { content: "\f848"; }[m
+[32m+[m[32m.bi-superscript::before { content: "\f849"; }[m
+[32m+[m[32m.bi-trello::before { content: "\f84a"; }[m
+[32m+[m[32m.bi-envelope-at-fill::before { content: "\f84b"; }[m
+[32m+[m[32m.bi-envelope-at::before { content: "\f84c"; }[m
+[32m+[m[32m.bi-regex::before { content: "\f84d"; }[m
+[32m+[m[32m.bi-text-wrap::before { content: "\f84e"; }[m
+[32m+[m[32m.bi-sign-dead-end-fill::before { content: "\f84f"; }[m
+[32m+[m[32m.bi-sign-dead-end::before { content: "\f850"; }[m
+[32m+[m[32m.bi-sign-do-not-enter-fill::before { content: "\f851"; }[m
+[32m+[m[32m.bi-sign-do-not-enter::before { content: "\f852"; }[m
+[32m+[m[32m.bi-sign-intersection-fill::before { content: "\f853"; }[m
+[32m+[m[32m.bi-sign-intersection-side-fill::before { content: "\f854"; }[m
+[32m+[m[32m.bi-sign-intersection-side::before { content: "\f855"; }[m
+[32m+[m[32m.bi-sign-intersection-t-fill::before { content: "\f856"; }[m
+[32m+[m[32m.bi-sign-intersection-t::before { content: "\f857"; }[m
+[32m+[m[32m.bi-sign-intersection-y-fill::before { content: "\f858"; }[m
+[32m+[m[32m.bi-sign-intersection-y::before { content: "\f859"; }[m
+[32m+[m[32m.bi-sign-intersection::before { content: "\f85a"; }[m
+[32m+[m[32m.bi-sign-merge-left-fill::before { content: "\f85b"; }[m
+[32m+[m[32m.bi-sign-merge-left::before { content: "\f85c"; }[m
+[32m+[m[32m.bi-sign-merge-right-fill::before { content: "\f85d"; }[m
+[32m+[m[32m.bi-sign-merge-right::before { content: "\f85e"; }[m
+[32m+[m[32m.bi-sign-no-left-turn-fill::before { content: "\f85f"; }[m
+[32m+[m[32m.bi-sign-no-left-turn::before { content: "\f860"; }[m
+[32m+[m[32m.bi-sign-no-parking-fill::before { content: "\f861"; }[m
+[32m+[m[32m.bi-sign-no-parking::before { content: "\f862"; }[m
+[32m+[m[32m.bi-sign-no-right-turn-fill::before { content: "\f863"; }[m
+[32m+[m[32m.bi-sign-no-right-turn::before { content: "\f864"; }[m
+[32m+[m[32m.bi-sign-railroad-fill::before { content: "\f865"; }[m
+[32m+[m[32m.bi-sign-railroad::before { content: "\f866"; }[m
+[32m+[m[32m.bi-building-add::before { content: "\f867"; }[m
+[32m+[m[32m.bi-building-check::before { content: "\f868"; }[m
+[32m+[m[32m.bi-building-dash::before { content: "\f869"; }[m
+[32m+[m[32m.bi-building-down::before { content: "\f86a"; }[m
+[32m+[m[32m.bi-building-exclamation::before { content: "\f86b"; }[m
+[32m+[m[32m.bi-building-fill-add::before { content: "\f86c"; }[m
+[32m+[m[32m.bi-building-fill-check::before { content: "\f86d"; }[m
+[32m+[m[32m.bi-building-fill-dash::before { content: "\f86e"; }[m
+[32m+[m[32m.bi-building-fill-down::before { content: "\f86f"; }[m
+[32m+[m[32m.bi-building-fill-exclamation::before { content: "\f870"; }[m
+[32m+[m[32m.bi-building-fill-gear::before { content: "\f871"; }[m
+[32m+[m[32m.bi-building-fill-lock::before { content: "\f872"; }[m
+[32m+[m[32m.bi-building-fill-slash::before { content: "\f873"; }[m
+[32m+[m[32m.bi-building-fill-up::before { content: "\f874"; }[m
+[32m+[m[32m.bi-building-fill-x::before { content: "\f875"; }[m
+[32m+[m[32m.bi-building-fill::before { content: "\f876"; }[m
+[32m+[m[32m.bi-building-gear::before { content: "\f877"; }[m
+[32m+[m[32m.bi-building-lock::before { content: "\f878"; }[m
+[32m+[m[32m.bi-building-slash::before { content: "\f879"; }[m
+[32m+[m[32m.bi-building-up::before { content: "\f87a"; }[m
+[32m+[m[32m.bi-building-x::before { content: "\f87b"; }[m
+[32m+[m[32m.bi-buildings-fill::before { content: "\f87c"; }[m
+[32m+[m[32m.bi-buildings::before { content: "\f87d"; }[m
+[32m+[m[32m.bi-bus-front-fill::before { content: "\f87e"; }[m
+[32m+[m[32m.bi-bus-front::before { content: "\f87f"; }[m
+[32m+[m[32m.bi-ev-front-fill::before { content: "\f880"; }[m
+[32m+[m[32m.bi-ev-front::before { content: "\f881"; }[m
+[32m+[m[32m.bi-globe-americas::before { content: "\f882"; }[m
+[32m+[m[32m.bi-globe-asia-australia::before { content: "\f883"; }[m
+[32m+[m[32m.bi-globe-central-south-asia::before { content: "\f884"; }[m
+[32m+[m[32m.bi-globe-europe-africa::before { content: "\f885"; }[m
+[32m+[m[32m.bi-house-add-fill::before { content: "\f886"; }[m
+[32m+[m[32m.bi-house-add::before { content: "\f887"; }[m
+[32m+[m[32m.bi-house-check-fill::before { content: "\f888"; }[m
+[32m+[m[32m.bi-house-check::before { content: "\f889"; }[m
+[32m+[m[32m.bi-house-dash-fill::before { content: "\f88a"; }[m
+[32m+[m[32m.bi-house-dash::before { content: "\f88b"; }[m
+[32m+[m[32m.bi-house-down-fill::before { content: "\f88c"; }[m
+[32m+[m[32m.bi-house-down::before { content: "\f88d"; }[m
+[32m+[m[32m.bi-house-exclamation-fill::before { content: "\f88e"; }[m
+[32m+[m[32m.bi-house-exclamation::before { content: "\f88f"; }[m
+[32m+[m[32m.bi-house-gear-fill::before { content: "\f890"; }[m
+[32m+[m[32m.bi-house-gear::before { content: "\f891"; }[m
+[32m+[m[32m.bi-house-lock-fill::before { content: "\f892"; }[m
+[32m+[m[32m.bi-house-lock::before { content: "\f893"; }[m
+[32m+[m[32m.bi-house-slash-fill::before { content: "\f894"; }[m
+[32m+[m[32m.bi-house-slash::before { content: "\f895"; }[m
+[32m+[m[32m.bi-house-up-fill::before { content: "\f896"; }[m
+[32m+[m[32m.bi-house-up::before { content: "\f897"; }[m
+[32m+[m[32m.bi-house-x-fill::before { content: "\f898"; }[m
+[32m+[m[32m.bi-house-x::before { content: "\f899"; }[m
+[32m+[m[32m.bi-person-add::before { content: "\f89a"; }[m
+[32m+[m[32m.bi-person-down::before { content: "\f89b"; }[m
+[32m+[m[32m.bi-person-exclamation::before { content: "\f89c"; }[m
+[32m+[m[32m.bi-person-fill-add::before { content: "\f89d"; }[m
+[32m+[m[32m.bi-person-fill-check::before { content: "\f89e"; }[m
+[32m+[m[32m.bi-person-fill-dash::before { content: "\f89f"; }[m
+[32m+[m[32m.bi-person-fill-down::before { content: "\f8a0"; }[m
+[32m+[m[32m.bi-person-fill-exclamation::before { content: "\f8a1"; }[m
+[32m+[m[32m.bi-person-fill-gear::before { content: "\f8a2"; }[m
+[32m+[m[32m.bi-person-fill-lock::before { content: "\f8a3"; }[m
+[32m+[m[32m.bi-person-fill-slash::before { content: "\f8a4"; }[m
+[32m+[m[32m.bi-person-fill-up::before { content: "\f8a5"; }[m
+[32m+[m[32m.bi-person-fill-x::before { content: "\f8a6"; }[m
+[32m+[m[32m.bi-person-gear::before { content: "\f8a7"; }[m
+[32m+[m[32m.bi-person-lock::before { content: "\f8a8"; }[m
+[32m+[m[32m.bi-person-slash::before { content: "\f8a9"; }[m
+[32m+[m[32m.bi-person-up::before { content: "\f8aa"; }[m
+[32m+[m[32m.bi-scooter::before { content: "\f8ab"; }[m
+[32m+[m[32m.bi-taxi-front-fill::before { content: "\f8ac"; }[m
+[32m+[m[32m.bi-taxi-front::before { content: "\f8ad"; }[m
+[32m+[m[32m.bi-amd::before { content: "\f8ae"; }[m
+[32m+[m[32m.bi-database-add::before { content: "\f8af"; }[m
+[32m+[m[32m.bi-database-check::before { content: "\f8b0"; }[m
+[32m+[m[32m.bi-database-dash::before { content: "\f8b1"; }[m
+[32m+[m[32m.bi-database-down::before { content: "\f8b2"; }[m
+[32m+[m[32m.bi-database-exclamation::before { content: "\f8b3"; }[m
+[32m+[m[32m.bi-database-fill-add::before { content: "\f8b4"; }[m
+[32m+[m[32m.bi-database-fill-check::before { content: "\f8b5"; }[m
+[32m+[m[32m.bi-database-fill-dash::before { content: "\f8b6"; }[m
+[32m+[m[32m.bi-database-fill-down::before { content: "\f8b7"; }[m
+[32m+[m[32m.bi-database-fill-exclamation::before { content: "\f8b8"; }[m
+[32m+[m[32m.bi-database-fill-gear::before { content: "\f8b9"; }[m
+[32m+[m[32m.bi-database-fill-lock::before { content: "\f8ba"; }[m
+[32m+[m[32m.bi-database-fill-slash::before { content: "\f8bb"; }[m
+[32m+[m[32m.bi-database-fill-up::before { content: "\f8bc"; }[m
+[32m+[m[32m.bi-database-fill-x::before { content: "\f8bd"; }[m
+[32m+[m[32m.bi-database-fill::befoerror: unable to open .git/objects/18: Stale file handle
+error: unable to open object pack directory: .git/objects/pack: Stale file handle
+fatal: unable to read 18d21d457558d4dc2e231a8f6ee585fada9c6bab
+re { content: "\f8be"; }[m
+[32m+[m[32m.bi-database-gear::before { content: "\f8bf"; }[m
+[32m+[m[32m.bi-database-lock::before { content: "\f8c0"; }[m
+[32m+[m[32m.bi-database-slash::before { content: "\f8c1"; }[m
+[32m+[m[32m.bi-database-up::before { content: "\f8c2"; }[m
+[32m+[m[32m.bi-database-x::before { content: "\f8c3"; }[m
+[32m+[m[32m.bi-database::before { content: "\f8c4"; }[m
+[32m+[m[32m.bi-houses-fill::before { content: "\f8c5"; }[m
+[32m+[m[32m.bi-houses::before { content: "\f8c6"; }[m
+[32m+[m[32m.bi-nvidia::before { content: "\f8c7"; }[m
+[32m+[m[32m.bi-person-vcard-fill::before { content: "\f8c8"; }[m
+[32m+[m[32m.bi-person-vcard::before { content: "\f8c9"; }[m
+[32m+[m[32m.bi-sina-weibo::before { content: "\f8ca"; }[m
+[32m+[m[32m.bi-tencent-qq::before { content: "\f8cb"; }[m
+[32m+[m[32m.bi-wikipedia::before { content: "\f8cc"; }[m

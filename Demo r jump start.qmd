@@ -1,0 +1,47 @@
+---
+title: "Demo R jump start"
+format: pdf
+editor: visual
+author: Danyili Hong
+date: '9/16/2023'
+
+---
+
+## Data
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+```
+
+First I will read my dataset:
+
+```{r}
+pp <- read_csv('https://sldr.netlify.app/data/sustainable-livelihoods.csv')
+head(pp)
+```
+
+Are men or women more likely to participate in the agriculture program? Are these results different between countries?
+
+Graphics
+
+```{r}
+gf_percents(~Gender, fill = ~Agriculture_Program, data = pp, position = 'dodge')
+```
+
+```{r}
+gf_bar(~Gender | Country, fill = ~Agriculture_Program, data = pp, position = 'dodge')
+```
+
+text
+
+I chose side-by-side bar graph because I am looking for the correlation between two categorical variables. I also used facet(Country) the third variable to see the relationship.
+
+
+According to the second graph, men in Mali participated in the agriculture program the most. Women in Tanzania participated in the agriculture program the most. 
+
+critique: 
+I think I can answer questions in a more professioned way rather than report what is obvious on the graph.

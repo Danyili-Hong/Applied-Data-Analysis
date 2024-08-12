@@ -1,0 +1,129 @@
+---
+title: "Case Study:Correlation between race ethnicity and novelty"
+format: pdf
+editor: visual
+author: "Danyili Hong"
+---
+
+# This is because the file couldn't render
+
+```{r}
+# Set the CRAN mirror
+options(repos = "https://cran.rstudio.com/")
+
+
+# Replace 'CRAN_mirror_URL' with the URL of the CRAN mirror you want to use.
+# For example:
+# options(repos = "https://cran.rstudio.com/")
+```
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+install.packages("dagitty")
+library(dagitty)
+
+```
+
+# Planning a model: 
+How would race ethnicity and field of people from different years impact the level of novelty? I will investigate whether race ethnicity, field, and year are associated with novelty, while accounting for effects of moderator sex.
+
+```{r}
+# Create a DAG
+dag <- dagitty('
+  dag {
+    "Race Ethnicity" [pos="1,2"]
+    "Year" [pos="2,1"]
+    "Field" [pos="2,3"]
+    "Novelty" [pos="3,2"]
+    
+    "Race Ethnicity" -> "Novelty" [pos="1,2"]
+    "Year" -> "Novelty" [pos="2,1"]
+    "Field" -> "Novelty" [pos="2,3"]
+    "Year" -> "Race Ethnicity"
+  }
+')
+
+# Plot the DAG
+plot(dag)
+```
+
+Causal Diagram: My main predictor is race ethnicity with my response variable novelty. I have year as my confounder, which influence race ethnicity and novelty level. I have field as my mediator influencing novelty, at the same time it could be precision covariate.
+
+And since there are 4195, it fulfills n/15 rule.
+
+```{r}
+innovation <- read_csv('https://sldr.netlify.app/data/phd_innovation.csv', show_col_types = FALSE)
+nrow(innovation)
+```
+
+```{r}
+nmodel <- lm(novelty ~ race_ethnicity + field + year, data = innovation)
+summary(nmodel)
+```
+
+# Fit your Model
+
+$$y = -30.54 + 0.7Race_{Asian} + 0.57Race_{AfricanAmerican} + 1.04Race_{NotReported}$$ $$+ 0.62Race_{Latino} + 1Race_{Morethanone} + 0.51Race_{Other} + 0.18Race_{White}$$ $$- 0.08Field_{Engineering} + 0.09Field_{HumanityandArts} -0.04Field_{LifeScience} $$$$+0.56Field_{MathandCS} + 0.44Field_{Other} - 0.51Field_{PhysicalandEarthScience}$$ $$ +0.45Field_{PhychologyandSocialScience} + 0.02year  + \epsilon,$$ $$\epsilon \sim N(0, 4.978)$$ 
+
+# Model Assessment
+```{r}
+innovation$residuals <- residuals(nmodel)
+gf_point(residuals ~ fitted(nmodel), data = innovation)
+gf_histogram(~residuals,data = innovation, bins=100)
+s245::gf_acf(~nmodel) |> gf_lims(y = c(-1,1))
+```
+
+Residuals and fitted model: This plot shows a random scatter of points around the horizontal line at zero, which indicates the linearity condition is met.
+
+Histogram of residuals: This plot appears to be roughly bell-shaped and symmetric. This plot is right-skewed, and some outliers are visible. This suggests that the residual normality condition is not met.
+
+ACF plot of residuals: This plot indicates that autocorrelation values for all lags are within the confidence bands, only one of them spikes out of the bound. This suggests that the independence of residuals is maintained.
+
+Since not all of the conditions are met, I conclude that the model is not appropriate for drawing valid conclusions.
+
+# Prediction Plot
+
+```{r}
+fake_data_categorical <- expand.grid(
+  race_ethnicity = c("Asian", "Black or African American", 
+                     "Ethnicity not reported", "Hispanic or Latino",
+                     "More than one race", 
+                     "Other race or race not reported", "White"), 
+                      field = "Engineering", 
+                      year = 2005)
+
+preds <- predict(nmodel, newdata = fake_data_categorical, se.fit = TRUE)
+glimpse(preds)
+
+fake_data_categorical <- fake_data_categorical |> 
+  mutate(pred = preds$fit, pred.se = preds$se.fit)
+fake_data_categorical <- fake_data_categorical |> 
+  mutate(CI_lower = pred - 1.96*pred.se, CI_upper = pred + 1.96*pred.se)
+glimpse(fake_data_categorical)
+
+gf_point(pred ~ race_ethnicity, data = fake_data_categorical) |> 
+  gf_labs(y='novelty') |> 
+  gf_errorbar(CI_lower + CI_upper ~ race_ethnicity)
+```
+
+The figure above shows model predictions illustrating how novelty is associated with race ethnicity. To make these predictions, field and year were held constant, field as Engineering and year as 2005.
+
+# Model Selection
+
+```{r}
+car::Anova(nmodel)
+```
+
+# Conclusions and Interpretation 
+Model assessment: all of the them met the condition so this is a appropriate model but the p-value suggests that it failed to reject the null hypothesis.
+
+Prediction plot: the plot shows between different race groups they have different novelty score range and median so it shows the association between race ethnicity and novelty score.
+
+null hypothesis: people in different race ethnicity and field from different years has impact on novelty level.
+
+Model selection: the p-value from the ANOVA was 0.2351 which provides no evidence against the null hypothesis. So, according to this result, we are not quite confident that when race ethnicity changes, novelty does not change.

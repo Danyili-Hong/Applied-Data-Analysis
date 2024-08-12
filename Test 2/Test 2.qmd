@@ -1,0 +1,108 @@
+---
+title: "Test 2"
+author: "Danyili Hong"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+library(glmmTMB)
+library(DHARMa)
+```
+# revised sections
+### Data Exploration: Graphic
+### Assessment: Scaled residuals plot
+### Interpretation/Conclusion: Prediction plot
+
+# Model Plan
+
+### Research Question
+
+We will aim to investigate if patient occupancy have contributed to PPE damage, and what's the association between them.
+
+### Causal Diagram
+
+![](test%202.png)
+
+Considering the causal diagram above, the response variable will be PPEDamaged(the number of damaged personal protective equipment) and the main predictor I'm most interested in is Occupancy(number of people being treated), because I think as the number of people vary, the level of the damage of personal protective equipment will differ. I put HighChlorine as my mediator because the paper mentioned high concentration chlorine solution usage was highly correlated with both daily patient occupancy and high-risk zone staff entries. I also have Month as my moderator.
+
+# Graphics
+
+```{r}
+ebola <- read_csv('https://sldr.netlify.app/data/ebola-WASH.csv', show_col_types = FALSE) |>
+select(PPEDamaged, Occupancy, HighChlorine, Month) |> 
+na.omit()
+nrow(ebola)/15
+```
+According to the n/15 rule, I can have estimated 8 parameters for this dataset, but it turns out having 11 parameters. Even though it's more than the estimated amount, I think all of the parameters are important so I kept them. 
+
+```{r}
+gf_point(PPEDamaged ~ Occupancy, data = ebola, color = ~Month) |>
+  gf_labs(title = 'the correlation between PPEDamaged and Occupancy',
+         x = "number of people being treated",
+         y = "the number of damaged personal protective equipment")
+```
+
+It looks like the most of the PPEDamaged are below 10. I can see a pattern that the more Occupancy the less PPEDamaged so I would say there is an association between Occupancy and PPEDamaged.And especially for patients in December and January have a relatively high number of PPE damaged. There are also more patients in February and March. 
+
+# Fit the Model
+
+```{r}
+# Fit the Model
+nb1 <- glmmTMB(PPEDamaged ~ Occupancy*Month + HighChlorine, data = ebola, family = nbinom1(link = 'log'))
+summary(nb1)
+nb2 <- glmmTMB(PPEDamaged ~ Occupancy*Month + HighChlorine, data = ebola, family = nbinom2(link = 'log'))
+AIC(nb1, nb2)
+```
+
+I used count regression because PPEDamaged is a count data. I didn't include offset because the data doesn't have any model rates or proportion of events, all of them are raw counts, which means they are all recorded as same unit across all variables every day. And nb1 is slightly better than nb2 according to the AIC score so I chose nb1 to proceed with next procedures.
+
+# Assessment
+
+```{r}
+nb1_sim <- simulateResiduals(nb1)
+plotResiduals(nb1_sim, quantreg = FALSE)
+s245::gf_acf(~resid(nb1))
+```
+
+According to the residual plot, the scaled residuals are uniformly distributed between 0 and 1, with no apparent patterns or trends. Therefore the mean-variance condition of the model is met.
+
+In the ACF plot above, the values of the autocorrelation function are well within the confidence bounds for almost all lags above 0, so we have no evidence of any dependence in the residuals. So, we believe the residual independence condition is met.
+
+### Model Selection
+
+```{r}
+car::Anova(nb1)
+```
+
+### Prediction Plot
+
+```{r}
+ebola <- as.data.frame(ebola)
+ggpredict(nb1, terms =c('Occupancy', 'Month')) |>
+  plot()
+```
+
+```{r}
+ebola <- as.data.frame(ebola)
+ggpredict(nb1, terms =c('Occupancy', 'Month')) |>
+  plot() |>
+  gf_lims(y=c(0,300))
+```
+
+From this prediction plot, we can tell that for January, it has a rising trend that more Occupancy the more PPEDamaged. For December, there is a small decline trend that the more Occupancy the less PPEDamaged. And for February, March, and April, there is barely any trend that shows from the prediction plot. 
+
+# Conclusion
+
+In data graph, we found that there is an association between Occupancy and PPEDamaged that the more Occupancy the less PPEDamaged. In model assessment, both mean-variance condition and the residual independence condition are met. But looking at the model selection, we found a p-value of 0.578 which provides no evidence at all. The prediction plot shows some trends which gives some evidence. Overall, I conclude that there is an association between patient occupancy and PPE damaged. 
+
+

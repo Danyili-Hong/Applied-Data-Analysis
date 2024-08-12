@@ -1,0 +1,125 @@
+---
+title: "Housing Loans"
+author: "Danyili Hong"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+library(glmmTMB)
+library(DHARMa)
+```
+
+```{r}
+hdma_mi_20 <-
+  read_csv('https://sldr.netlify.app/data/hdma-mi-20.csv') |>
+  mutate(
+    derived_race = case_when(
+      derived_race == 'White' ~ 'White',
+      derived_race == 'Black or African American' ~ 'Black or African American',
+      derived_race == 'Asian' ~ 'Asian',
+      derived_race == 'Race Not Available' ~ 'Race Not Available',
+      TRUE ~ 'Other'
+    ),
+    loan_to_value_ratio = parse_number(loan_to_value_ratio),
+    property_value = parse_number(property_value),
+    co_applicant = ifelse(`co-applicant_ethnicity-1` == 5, 'No', 'Yes'),
+    loan_term = parse_number(loan_term),
+    aus = `aus-1`
+  )
+
+# Limit to only Kent County (where Calvin is located), if desired
+hdma_kent_20 <- hdma_mi_20 |>
+  filter(county_code == 26081)
+```
+
+# Model Plan
+
+I'm going to use this model to predict the likelihood of a home loan being approved for a borrower in Kent County, Michigan in 2023.
+
+## Causal Diagram
+
+![](Housing Loans.png)
+
+Considering the causal diagram above, the response variable will be the number of loan approvals and the main predictor I'm most interested in is different races of the borrowers. I want to see if loan-to-value ratio and loan term will affect the probability of approving so I put both loan-to-value ratio and loan term as my moderators. Property could also affect loan-to-value ratio and loan term in some ways. Since it's binary data, we are going to use binomial family and logit link function. 
+
+```{r}
+hdma_kent_20 <- hdma_kent_20 |>
+  # for case_when, each variable value gets a line of the form
+  #  logical_condition_statement ~ new_value_to_assign
+  mutate(action_taken = case_when(action_taken == 1 ~ 'Loan granted',
+                                  action_taken == 3 ~ 'Loan denied'),
+         action_taken = factor(action_taken))
+
+mosaic::tally(~action_taken, data = hdma_kent_20)
+```
+
+```{r}
+hdma_kent_20 <- hdma_kent_20 |> mutate(income = income / 100000)
+hdma_kent_20 <- hdma_kent_20 |> mutate(property_value = property_value / 100000)
+```
+
+# Exploration
+```{r}
+gf_props(~action_taken| derived_race,
+         data = hdma_kent_20)
+```
+
+
+```{r}
+mosaic::tally(~derived_race, data = hdma_kent_20)
+hdma_kent_20 <- hdma_kent_20 |>
+  mutate(drived_race = fct_lump_min(derived_race, min = 200))
+gf_bar(~derived_race, data = hdma_kent_20)
+```
+It's not very obvious but we can see that Asian, Black or African American, and Race not Available are slightly more likely to get denied on their application.     
+
+# Fit the model
+```{r}
+model <- glmmTMB(action_taken ~ derived_race + loan_term + loan_to_value_ratio + property_value,
+                 data = hdma_kent_20,
+                 family = binomial(link = 'logit'))
+summary(model)
+
+```
+
+# Assessment
+```{r}
+model_sim <- simulateResiduals(model)
+
+gf_point(model_sim$scaledResiduals ~ rank(fitted(model))) |>
+  gf_labs(x = 'Predicted Probability',
+          y = 'Scaled Residuals')
+```
+
+The points are spread uniformly top-to-bottom so we have no indication that the mean-variance relationship departs from what is expected.If you zoom in to the graph you can see a pattern that most of the dots is in same vertical direction around x = 2500 area, I don't know if it has enough evidence to show the linear trend. 
+
+```{r}
+s245::gf_acf(~resid(model))
+```
+
+Most of the lines are inside of the bound so I would conclude that the independence of residuals condition is met. 
+
+# Conclusions
+
+## Model Selection
+```{r}
+car::Anova(model)
+```
+
+## Prediction Plot
+```{r}
+ggpredict(model, terms = 'derived_race') |>
+  plot()
+```
+
+According to my model selection, it shows that derived_race has a very small p-value which means there is a correlation between action_taken and derived_race. From my model assessment, both independence of residuals and mean-variance relationship are met. At last, the prediction plot also shows that white people are more likely to get approved compare to other colored races. 

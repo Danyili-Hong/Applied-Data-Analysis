@@ -1,0 +1,114 @@
+---
+title: "Test 1"
+author: "Danyili Hong"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+```
+
+# Revisions
+### Model Plan: Predictor(s)
+### Model Fitting: equation
+
+
+# Plan
+
+I will investigate whether certain types of fin whale sounds might be related to feeding or reproduction. I will have zoo as my main predictor since it controls the amount of food and call20_rate as my response variable because it records how many 20Hz fin whale sounds.
+
+Causal Diagram: My main predictor is zoo, and my response is call20_rate. I have both season and location as my moderators because I think the abundance of zooplankton can vary seasonally and in response to environmental conditions.
+
+Since there are 144 data sets, we can have around 10 parameters.
+
+![](causal%20diagram%20for%20test%201.png)
+
+```{r}
+whale <- read_csv('https://sldr.netlify.app/data/weekly_fin_nosum.csv', show_col_type = FALSE)
+nrow(whale)
+```
+
+# Graphics
+
+```{r}
+gf_point(call20_rate ~ zoo, data = whale) |>
+  gf_labs(title = 'the correlation between fin whale sound and fin whale food',
+         x = "fin whale food",
+         y = "rate of production of 20Hz fin whale calls")
+```
+
+It looks like the less food they get, the more fin whales make 20Hz calls. Although there are a few outliers in the graph, I would say there is an association between call20_rate and zoo.
+
+# Fit
+
+```{r}
+model <- lm(call20_rate ~ zoo + location + season, data = whale)
+summary(model)
+```
+
+$$y = 17.6102 - 0.246zoo + 3.534location_{Gigante} + 0.579season_{spring}$$ $$+ 19.925season_{winter} +\epsilon,$$ $$\epsilon \sim N(0, 17.31)$$
+
+If the parameter for location is Gigante then it's indicator is 1, if not 0. If the parameter for season are spring or winter then it's indicator is 1, if not 0.
+
+# Adjusted R\^2
+
+The adjusted r\^2 for my model is 0.2423, which indicates a small proportion of variance in the response variable is explained by the model.
+
+# Assessment
+
+```{r}
+whale$residuals <- residuals(model)
+gf_point(residuals ~ fitted(model), data = whale)
+gf_histogram(~residuals, data = whale, bins = 50)
+```
+
+Residuals and fitted model: residuals and fitted model checks linearity and constant variance. This plot shows a random scatter of points around the horizontal line at zero, which indicates the lack of non-linearity condition is met. It shows that the plot does not have consistent spread so the condition constant variance is not met.
+
+Histogram of residuals: histogram of residuals check normality. This plot is in a right-skewed shape, and there are also some outliers so I would say the normality of residuals condition is not met.
+
+# Interpretation
+
+Prediction plot:
+
+```{r}
+fake_data <- expand.grid(zoo = seq(from = 15,
+                                                       by = 0.5,
+                                                       to = 112),
+                                     season = 'win',
+                                     location = 'Gigante')
+
+preds <- predict(model, newdata = fake_data, se.fit = TRUE)
+glimpse(preds)
+
+fake_data <- fake_data |> mutate(pred = preds$fit, pred.se = preds$se.fit)
+fake_data <- fake_data |> mutate(CI_lower = pred - 1.96*pred.se, CI_upper = pred + 1.96*pred.se)
+glimpse(fake_data)
+
+gf_line(pred ~ zoo, data = fake_data) |> 
+  gf_labs(y='call20_rate') |> 
+  gf_ribbon(CI_lower + CI_upper ~ zoo)
+```
+
+Model selection:
+
+```{r}
+nmodel <- lm(call20_rate ~ location + season, data = whale)
+BIC(model, nmodel)
+```
+
+For the prediction plot, we can see that the plot has a negative slope line trend which means the more fin whale food the less 20Hz call they make. But also I can fit a straight horizontal line inside the confidence boundary so it can't really show the association between zoo and call20_rate.
+
+For model selection, the difference between two models are very small but it's better when we don't include our main predictor.
+
+# Conclusion
+
+In conclusion, the lack of non-linearity condition is met but both constant variance and normality are not met. The prediction plot can't really give strong evidence to support the association between zoo and call20_rate since we can fit a horizontal line inside the confidence boundary. Including our main predictor also makes our BIC score get higher a little bit, so we don't have enough evidence to conclude whether certain types of fin whale sounds might be related to feeding or reproduction.

@@ -1,0 +1,22 @@
+---
+title: "quiz 3"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+```
+
+```{r}
+q3 <- read_csv('https://sldr.netlify.com/data/BelugaBlubber.csv')
+head(q3)
+```
+```{r}
+model <- lm(BlubberMass1.kg ~ MeanBlubberMass2.kg, data=q3)
+summary(model)
+```

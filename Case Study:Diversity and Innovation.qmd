@@ -1,0 +1,84 @@
+---
+title: "Case Study:Diversity and Innovation"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+```
+
+Planning a model: the response would be novelty, and predictors are sex and race ethnicity. I wanted to know if sex and race would have any correlation with innovation level.
+
+```{r}
+innovation <- read_csv('https://sldr.netlify.app/data/phd_innovation.csv', show_col_types = FALSE)
+model <- lm(novelty ~ sex + race_ethnicity, data = innovation)
+nrow(innovation)
+```
+
+```{r}
+gf_boxplot(novelty ~ sex, data = innovation)
+gf_boxplot(novelty ~ race_ethnicity, data = innovation)
+gf_point(novelty ~ year, data = innovation)
+gf_boxplot(novelty ~ field, data = innovation)
+gf_bar( ~ field, 
+        fill = ~ race_ethnicity,
+        data = innovation, 
+        position = 'dodge')
+```
+
+The graph between novelty and sex doesn't show much since they have very similar median and IQR. The graph between novelty and race ethnicity shows a dominant lead for White followed by Asians and Black or African American. I can also see a small trend as the year goes on the novelty level tend to be down a little bit. There are some fields are leading the novelty level but I can't really tell since the names are all overlapped.
+
+```{r}
+summary(model)
+```
+
+Causal Diagram:
+
+My main predictor is race ethnicity with my response variable novelty. I made sex as a moderator since it doesn't affect novelty level directly. Both field and year showed a reasonable correlation with novelty. I would include race ethnicity, field, and year as my predictors to my new model.
+
+```{r}
+nmodel <- lm(novelty ~ race_ethnicity + field + year, data = innovation)
+summary(nmodel)
+```
+
+$$y = -30.54 + 0.7\beta_{raceAsian} + 0.57\beta_{raceAfricanAmerican} + 1.04\beta_{raceNotReported}$$
+$$+ 0.62\beta_{raceLatino} + 1\beta_{raceMorethanone} + 0.51\beta_{raceOther} + 0.18\beta_{raceWhite}$$
+ $$- 0.08\beta_{fieldEngineering} + 0.09\beta_{fieldHumanityandArts} -0.04\beta_{fieldLifeScience} $$$$+0.56\beta_{fieldMathandCS} + 0.44\beta_{fieldOther} - 0.51\beta_{fieldPhysicalandEarthScience}$$
+$$ +0.45\beta_{fieldPhychologyandSocialScience} + 0.02\beta_{year}  + \epsilon,$$ $$\epsilon \sim N(0, 4.978)$$
+
+```{r}
+innovation$residuals <- residuals(nmodel)
+gf_point(residuals ~ fitted(nmodel), data = innovation)
+gf_histogram(~residuals,data = innovation, bins=100)
+s245::gf_acf(~nmodel) |> gf_lims(y = c(-1,1))
+```
+
+Residuals and fitted model: It doesn't really show linearity from this graph, so I don't think it meets the condition.
+
+Histogram of residuals: This is not normally distributed. This is a right-skewed graph. It also don't meet the condition.
+
+ACF plot of residuals: There is only one significant spike, so I would say this meets the condition.
+
+Since not all of them met the conditions, I cannot draw a valid conclusion from this model.
+
+```{r}
+b2 <- innovation |>
+ select(field, race_ethnicity, year, novelty) |>
+ na.omit() |>
+ mutate(preds = predict(nmodel),
+        resids = resid(nmodel))
+```
+
+```{r}
+gf_point(novelty ~ race_ethnicity,
+ data = b2) |>
+gf_line(preds ~ race_ethnicity)
+```
+
+I don't know why somehow the line doesn't show.

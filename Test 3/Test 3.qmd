@@ -1,0 +1,97 @@
+---
+title: "Test 3"
+author: "Danyili Hong"
+format:
+  html:
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(ggformula)
+library(ggplot2)
+library(ggeffects)
+library(glmmTMB)
+library(DHARMa)
+```
+
+
+# Data and Sort
+
+```{r}
+ebola <- read_csv('https://sldr.netlify.app/data/ebola-WASH.csv', show_col_types = FALSE) |>
+select(PPEDamaged, Occupancy, HighChlorine, Month,Week) |> 
+na.omit()
+nrow(ebola)/15
+ebola <- ebola |>
+  arrange(Week)
+```
+According to the n/15 rule, I can have estimated 8 parameters for this dataset, but it turns out having 11 parameters. Even though it's more than the estimated amount, I think all of the parameters are important so I kept them. 
+
+# Rationale
+I included Week as my random effect. I chose Week because it is one of the variables to track time and the measurements were taken repeatedly over time. I also have estimated 8 parameters that I can include for this dataset, but since my original dateset has already surpassed 8 parameters so I decided only include one random effect. 
+
+
+# Fit the Model
+
+```{r}
+# Fit the Model
+nb1_re <- glmmTMB(PPEDamaged ~ Occupancy*Month + HighChlorine + (1|Week), data = ebola, family = nbinom1(link = 'log'))
+nb2 <- glmmTMB(PPEDamaged ~ Occupancy*Month + HighChlorine + (1|Week), data = ebola, family = nbinom2(link = 'log'))
+AIC(nb1_re, nb2)
+```
+
+# Summary
+```{r}
+summary(nb1_re)
+```
+
+The random effect variance is 0.05208 which is very small. It means that there is little variability in PPEDamaged between different weeks after accounting for fixed effects. 
+
+
+# Assessment
+
+```{r}
+nb1 <- glmmTMB(PPEDamaged ~ Occupancy*Month + HighChlorine, data = ebola, family = nbinom1(link = 'log'))
+s245::gf_acf(~resid(nb1_re))
+s245::gf_acf(~resid(nb1))
+```
+By comparing two ACF plots, one with random effect and one without, both of them only have one lag poking out of the confidence bound so I would say both of them met the residual independence condition. From my ACF plots, adding random effect didn't really affect the residual independence. 
+
+
+### Model Selection
+
+```{r}
+car::Anova(nb1_re)
+```
+
+### Prediction Plot
+
+```{r}
+ebola <- as.data.frame(ebola)
+ggpredict(nb1_re, terms =c('Occupancy', 'Month')) |>
+  plot()
+```
+
+```{r}
+ebola <- as.data.frame(ebola)
+ggpredict(nb1_re, terms =c('Occupancy', 'Month')) |>
+  plot() |>
+  gf_lims(y=c(0,300))
+```
+
+From this prediction plot, we can tell that for January, it has a rising trend that more Occupancy the more PPEDamaged. For December, there is a small decline trend that the more Occupancy the less PPEDamaged. And for February, March, and April, there is barely any trend that shows from the prediction plot. My plot shows "population average" type of predictions. I chose "population average" because there wasn't a substantial variability across all individuals or groups. 
+
+# Conclusion
+
+In model selection, I got a p-value of 0.6248 which provides no evidence at all. The residual independence condition is met. The specific values of every term changed compare to the results without the random effect but we get the same conclusions from the results. Like I mentioned before, the random effect "Week" provides a little variability to the model. Overall, I conclude that there is an association between patient occupancy and PPE damaged.
+
+# Extra 
+pros: I think for sure take-home test gave us more time to prepare for it also study more while working on the tests. It gives us more wiggle room to schedule our time for other stuff. 
+cons: The only thing I can think of is it usually takes longer than the paper tests since we can always spend more time on it to make it better.
+
+
